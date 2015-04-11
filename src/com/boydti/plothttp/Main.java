@@ -9,7 +9,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import fi.iki.elonen.ServerRunner;
+import com.boydti.plothttp.object.PlotResource;
+import com.boydti.plothttp.object.Request;
+import com.boydti.plothttp.util.NanoHTTPD;
+import com.boydti.plothttp.util.RequestManager;
+import com.boydti.plothttp.util.ResourceManager;
+import com.boydti.plothttp.util.ServerRunner;
 
 public class Main extends JavaPlugin {
     
@@ -17,10 +22,6 @@ public class Main extends JavaPlugin {
     public static FileConfiguration config;
     public static Main plugin;
     
-    public static HashSet<String> allowedIps = new HashSet<>();
-    public static boolean content = true;
-    public static boolean api = true;
-    public static boolean whitelist = true;
     public static int port = 8080;
     
     @Override
@@ -30,6 +31,9 @@ public class Main extends JavaPlugin {
         
         // Setting up configuration
         setupConfig();
+        
+        // Setting up resources
+        setupResources();
         
         Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
             @Override
@@ -42,6 +46,13 @@ public class Main extends JavaPlugin {
     @Override
     public void onDisable() {
         Main.server.stop();
+    }
+    
+    public void setupResources() {
+        // Adding the plot resource
+        ResourceManager.addResource(new PlotResource());
+        
+        
     }
     
     public void setupConfig() {
@@ -64,12 +75,18 @@ public class Main extends JavaPlugin {
                 config.set(node.getKey(), node.getValue());
             }
         }
-        Main.whitelist = Main.config.getBoolean("whitelist.enabled");
-        if (whitelist) {
-            allowedIps.addAll(config.getStringList("whitelist.allowed"));
+        if (Main.config.getBoolean("whitelist.enabled")) {
+            for (String ip : config.getStringList("whitelist.allowed")) {
+                HashMap<String, String> params = new HashMap<>();
+                params.put("*", "*");
+                RequestManager.addToken(new Request(ip, "*", "*", params));
+            }
         }
-        Main.content = config.getBoolean("conent.serve");
-        Main.api = config.getBoolean("api.serve");
+        else {
+            HashMap<String, String> params = new HashMap<>();
+            params.put("*", "*");
+            RequestManager.addToken(new Request("*", "*", "*", params));
+        }
         Main.port = config.getInt("port");
         plugin.saveConfig();
     }

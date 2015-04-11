@@ -1,8 +1,6 @@
-package fi.iki.elonen;
+package com.boydti.plothttp.util;
 
 import java.io.IOException;
-
-import com.boydti.plothttp.NanoHTTPD;
 
 public class ServerRunner {
     public static NanoHTTPD run(Class serverClass) {

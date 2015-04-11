@@ -3,7 +3,12 @@ package com.boydti.plothttp;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.boydti.plothttp.NanoHTTPD.Response.Status;
+import com.boydti.plothttp.object.Request;
+import com.boydti.plothttp.object.Resource;
+import com.boydti.plothttp.util.NanoHTTPD;
+import com.boydti.plothttp.util.RequestManager;
+import com.boydti.plothttp.util.NanoHTTPD.Response.Status;
+import com.boydti.plothttp.util.ResourceManager;
 
 public class PlotServer extends NanoHTTPD {
     public PlotServer() {
@@ -13,49 +18,49 @@ public class PlotServer extends NanoHTTPD {
     @Override public Response serve(IHTTPSession session) {
         Map<String, String> headers = session.getHeaders();
         String ip = headers.get("remote-addr");
-        
-        if (Main.whitelist) {
-            if (!Main.allowedIps.contains(ip)) {
-                System.out.print("Denied query from: " + ip);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {}
-                return new NanoHTTPD.Response(Status.FORBIDDEN, MIME_PLAINTEXT, "403 FORBIDDEN");
-            }
-        }
-        
-        
         Method method = session.getMethod();
         String uri = session.getUri();
-        Map<String, String> params = session.getParms();
-        
+        Map<String, String> args = session.getParms();
+
+
+        //////////////////////////////// DEBUG STUFF ////////////////////////////////
         System.out.print("IP: " + ip);
         System.out.print("METHOD: " + method.name());
         System.out.print("URI: " + uri);
         System.out.print("PARAMS:");
-        for (Entry<String, String> entry : params.entrySet()) {
+        for (Entry<String, String> entry : args.entrySet()) {
             System.out.print(" - " + entry.getKey() + "=" + entry.getValue());
         }
+        //////////////////////////////// END DEBUG ////////////////////////////////
         
+        // Create a new request object
+        Request request = new Request(ip, method.name(), uri, args);
         
-        // TODO check if serving API
+        // Check if the request is allowed
+        if (!RequestManager.isAllowed(request)) {
+            System.out.print("Denied query from: " + ip);
+            return new NanoHTTPD.Response(Status.FORBIDDEN, MIME_PLAINTEXT, "403 FORBIDDEN");
+        }
         
-        /*
-         * METHOD GET:
-         * '/plot'
-         * '/plots'
-         * 
-         * ETC
-         * 
-         *  
-         * 
-         */
+        // Get the resource
+        Resource resource;
+        if (uri.length() > 0) {
+            resource = ResourceManager.getResource(uri.substring(1));
+        }
+        else {
+            resource = ResourceManager.getDefault();
+        }
         
-        // TODO If not valid API call check if serving content
+        // Return 404 NOT FOUND - if resource cannot be found
+        if (resource == null) {
+            System.out.print("Invalid resource request from: " + ip + " : " + uri);
+            return new NanoHTTPD.Response(Status.NOT_FOUND, MIME_PLAINTEXT, "404 NOT FOUND");
+        }
         
-        // The result
-        String msg = "";
+        // Get a the result of the resource
+        String result = resource.getResult(request);
         
-        return new NanoHTTPD.Response(msg);
+        // Return the result
+        return new NanoHTTPD.Response(result);
     }
 }

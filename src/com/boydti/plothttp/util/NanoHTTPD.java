@@ -1,4 +1,4 @@
-package com.boydti.plothttp;
+package com.boydti.plothttp.util;
 
 import java.io.*;
 import java.net.InetAddress;
