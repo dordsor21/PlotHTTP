@@ -9,6 +9,7 @@ import com.boydti.plothttp.util.NanoHTTPD;
 import com.boydti.plothttp.util.RequestManager;
 import com.boydti.plothttp.util.NanoHTTPD.Response.Status;
 import com.boydti.plothttp.util.ResourceManager;
+import com.intellectualcrafters.json.JSONStringer;
 
 public class PlotServer extends NanoHTTPD {
     public PlotServer() {
@@ -21,7 +22,6 @@ public class PlotServer extends NanoHTTPD {
         Method method = session.getMethod();
         String uri = session.getUri();
         Map<String, String> args = session.getParms();
-
 
         //////////////////////////////// DEBUG STUFF ////////////////////////////////
         System.out.print("IP: " + ip);
@@ -59,6 +59,12 @@ public class PlotServer extends NanoHTTPD {
         
         // Get a the result of the resource
         String result = resource.getResult(request);
+        
+        // Return an empty result
+        if (result.length() == 0) {
+            return new NanoHTTPD.Response("[]");
+        }
+        
         
         // Return the result
         return new NanoHTTPD.Response(result);

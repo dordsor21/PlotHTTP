@@ -9,8 +9,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.boydti.plothttp.object.ClusterResource;
+import com.boydti.plothttp.object.CommentResource;
 import com.boydti.plothttp.object.PlotResource;
 import com.boydti.plothttp.object.Request;
+import com.boydti.plothttp.object.SchematicResource;
+import com.boydti.plothttp.object.UUIDResource;
+import com.boydti.plothttp.object.WebResource;
+import com.boydti.plothttp.object.WorldResource;
 import com.boydti.plothttp.util.NanoHTTPD;
 import com.boydti.plothttp.util.RequestManager;
 import com.boydti.plothttp.util.ResourceManager;
@@ -50,6 +56,12 @@ public class Main extends JavaPlugin {
     
     public void setupResources() {
         // Adding the plot resource
+        ResourceManager.addResource(new ClusterResource());
+        ResourceManager.addResource(new CommentResource());
+        ResourceManager.addResource(new SchematicResource());
+        ResourceManager.addResource(new UUIDResource());
+        ResourceManager.addResource(new WebResource());
+        ResourceManager.addResource(new WorldResource());
         ResourceManager.addResource(new PlotResource());
         
         
