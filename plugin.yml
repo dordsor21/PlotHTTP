@@ -1,0 +1,7 @@
+name: PlotHTTP
+main: com.boydti.plothttp.Main
+version: 1
+load: STARTUP
+softdepend: [PlotSquared]
+description: PlotSquared HTTP test
+authors: [Empire92, Citymonstret]
