@@ -51,7 +51,7 @@ public class PlotServer extends NanoHTTPD {
             resource = ResourceManager.getDefault();
         }
         
-        // Return 404 NOT FOUND - if resource cannot be found
+        // Return '404 NOT FOUND' - if resource cannot be found
         if (resource == null) {
             System.out.print("Invalid resource request from: " + ip + " : " + uri);
             return new NanoHTTPD.Response(Status.NOT_FOUND, MIME_PLAINTEXT, "404 NOT FOUND");
@@ -59,6 +59,12 @@ public class PlotServer extends NanoHTTPD {
         
         // Get a the result of the resource
         String result = resource.getResult(request);
+        
+        // Return '404 NOT FOUND' - if resource returns null
+        if (result == null) {
+            System.out.print("Invalid resource request from: " + ip + " : " + uri);
+            return new NanoHTTPD.Response(Status.NOT_FOUND, MIME_PLAINTEXT, "404 NOT FOUND");
+        }
         
         // Return an empty result
         if (result.length() == 0) {
