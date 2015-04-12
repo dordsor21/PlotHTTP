@@ -11,7 +11,7 @@ public class UUIDResource extends Resource{
 
     // will return JSON object as String
     @Override
-    public String getResult(Request request) {
+    public byte[] getResult(Request request) {
         // TODO Auto-generated method stub
         return null;
     }

@@ -24,7 +24,7 @@ public class PlotResource extends Resource {
 
     // will return JSON object as String
     @Override
-    public String getResult(Request request) {
+    public byte[] getResult(Request request) {
         /*
          * id
          * player
@@ -53,7 +53,7 @@ public class PlotResource extends Resource {
             plotsObj.put(serializePlot(plot));
         }
         
-        return plotsObj.toString(1);
+        return plotsObj.toString(1).getBytes();
     }
  
     public JSONObject serializePlot(Plot plot) {

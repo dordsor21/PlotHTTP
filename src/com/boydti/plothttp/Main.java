@@ -48,6 +48,7 @@ public class Main extends JavaPlugin {
     
     public static int port = 8080;
     public static File FILE = null;
+    public static String ip;
     
     private boolean commands = false;
     
@@ -147,8 +148,10 @@ public class Main extends JavaPlugin {
     }
     
     public void setupWeb() {
-        // Copy over index.html
+        // Copy over template files
         copyFile("index.html");
+        copyFile("upload.html");
+        copyFile("download.html");
         
         // Loading web files
         File directory = new File(plugin.getDataFolder() + File.separator + "web");
@@ -185,6 +188,7 @@ public class Main extends JavaPlugin {
         options.put("content.serve", true);
         options.put("api.serve", true);
         options.put("port", 8080);
+        options.put("web-ip", "http://www.google.com");
         
         for (final Entry<String, Object> node : options.entrySet()) {
             if (!config.contains(node.getKey())) {
@@ -205,6 +209,7 @@ public class Main extends JavaPlugin {
             RequestManager.addToken(new Request("*", "*", "*", params));
         }
         Main.port = config.getInt("port");
+        Main.ip = config.getString("web-ip");
         plugin.saveConfig();
     }
 }

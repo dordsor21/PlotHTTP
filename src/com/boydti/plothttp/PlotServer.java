@@ -1,5 +1,6 @@
 package com.boydti.plothttp;
 
+import java.io.ByteArrayInputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -58,7 +59,7 @@ public class PlotServer extends NanoHTTPD {
         }
         
         // Get a the result of the resource
-        String result = resource.getResult(request);
+        byte[] result = resource.getResult(request);
         
         // Return '404 NOT FOUND' - if resource returns null
         if (result == null) {
@@ -67,12 +68,15 @@ public class PlotServer extends NanoHTTPD {
         }
         
         // Return an empty result
-        if (result.length() == 0) {
+        if (result.length == 0) {
             return new NanoHTTPD.Response("[]");
         }
         
         
         // Return the result
-        return new NanoHTTPD.Response(result);
+        ByteArrayInputStream data = new ByteArrayInputStream(result);
+        Response page = new NanoHTTPD.Response(Status.OK, MIME_HTML, data);
+        resource.process(page);
+        return page;
     }
 }
