@@ -149,9 +149,9 @@ public class Main extends JavaPlugin {
     
     public void setupWeb() {
         // Copy over template files
-        copyFile("index.html");
-        copyFile("upload.html");
-        copyFile("download.html");
+        copyFile("views/index.html");
+        copyFile("views/upload.html");
+        copyFile("views/download.html");
         
         // Loading web files
         File directory = new File(plugin.getDataFolder() + File.separator + "web");
