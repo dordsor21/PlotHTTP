@@ -18,6 +18,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.boydti.plothttp.command.Web;
 import com.boydti.plothttp.object.ClusterResource;
 import com.boydti.plothttp.object.CommentResource;
 import com.boydti.plothttp.object.PlotResource;
@@ -52,7 +53,6 @@ public class Main extends JavaPlugin {
     
     @Override
     public void onEnable() {
-        Main.config = getConfig();
         Main.plugin = this;
         try {
             Main.FILE = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
@@ -94,32 +94,7 @@ public class Main extends JavaPlugin {
             return;
         }
         commands = true;
-        SubCommand cmd = new SubCommand("web", "plots.admin", "Web related commands", "", "web", CommandCategory.DEBUG, false) {
-            @Override
-            public boolean execute(PlotPlayer player, String... args) {
-                if (player != null) {
-                    MainUtil.sendMessage(player, C.NOT_CONSOLE);
-                    return false;
-                }
-                if (args.length == 0) {
-                    MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot web reload");
-                    return false;
-                }
-                switch (args[0]) {
-                    case "reload": {
-                        onDisable();
-                        onEnable();
-                        MainUtil.sendMessage(player, "&aReloaded success!");
-                        return true;
-                    }
-                    default: {
-                        MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot web reload");
-                    }
-                }
-                return false;
-            }
-        };
-        MainCommand.subCommands.add(cmd);
+        MainCommand.subCommands.add(new Web());
     }
     
     public void setupResources() {
@@ -194,10 +169,15 @@ public class Main extends JavaPlugin {
     public void setupConfig() {
         if (Main.config == null) {
             plugin.saveDefaultConfig();
+            Main.config = plugin.getConfig();
         }
+        else {
+            plugin.reloadConfig();
+            Main.config = plugin.getConfig();
+        }
+        
         final Map<String, Object> options = new HashMap<>();
         
-        Main.config = plugin.getConfig();
         Main.config.set("version", Main.plugin.getDescription().getVersion());
         
         options.put("whitelist.enabled", true);
@@ -215,6 +195,7 @@ public class Main extends JavaPlugin {
             for (String ip : config.getStringList("whitelist.allowed")) {
                 HashMap<String, String> params = new HashMap<>();
                 params.put("*", "*");
+                System.out.print("ADDING TOKEN: " + ip);
                 RequestManager.addToken(new Request(ip, "*", "*", params));
             }
         }

@@ -54,8 +54,8 @@ public class Request {
             if (ARGS.containsKey("*")) {
                 return true;
             }
-            for (Entry<String, String> entry : other.ARGS.entrySet()) {
-                String current = ARGS.get(entry.getKey());
+            for (Entry<String, String> entry : ARGS.entrySet()) {
+                String current = other.ARGS.get(entry.getKey());
                 if (current == null) {
                     return false;
                 }
