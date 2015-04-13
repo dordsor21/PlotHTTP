@@ -4,12 +4,25 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import com.boydti.plothttp.Main;
 import com.boydti.plothttp.util.WebUtil;
+import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
 import com.boydti.plothttp.util.NanoHTTPD.Response;
+import com.intellectualcrafters.plot.commands.SchematicCmd;
+import com.intellectualcrafters.plot.config.C;
+import com.intellectualcrafters.plot.object.Plot;
+import com.intellectualcrafters.plot.util.MainUtil;
+import com.intellectualcrafters.plot.util.SchematicHandler;
+import com.intellectualcrafters.plot.util.SchematicHandler.Dimension;
+import com.intellectualcrafters.plot.util.SchematicHandler.Schematic;
+import com.intellectualcrafters.plot.util.TaskManager;
 
 public class WebResource extends Resource {
 
@@ -18,6 +31,9 @@ public class WebResource extends Resource {
     
     // File pointers
     public static HashMap<String, String> downloads = new HashMap<>();
+    
+    // Plot pointers
+    public static HashMap<String, Plot> uploads = new HashMap<>();
     
     public static String nextId() {
         return new BigInteger(130, random).toString(32);
@@ -32,7 +48,7 @@ public class WebResource extends Resource {
 
     // will return an HTML web page
     @Override
-    public byte[] getResult(Request request) {
+    public byte[] getResult(Request request, IHTTPSession session) {
         String page = request.ARGS.get("page");
         if (page == null) {
             page = "index";
@@ -53,10 +69,64 @@ public class WebResource extends Resource {
                         e.printStackTrace();
                     }
                 }
+                return null;
+            }
+
+            // uploads (TODO)
+            
+            final Plot upload = uploads.get(id);
+            if (upload != null) {
+                String result;
+                if (session.getMethod().name().equals("POST")) {
+                    String filename = upload.id.x + ";" + upload.id.y + "," + upload.world + ".schematic";
+                    String directory = Main.plugin.getDataFolder() + File.separator + "uploads" + File.separator + filename;
+                    
+                    try {
+                        Map<String, String> files = new HashMap<String, String>();
+                        session.parseBody(files);
+                        Set<String> keys = files.keySet();
+                        for(String key: keys){
+                            String name = key;
+                            
+                            System.out.print("name: " + name);
+                            System.out.print("key: " + files.get(key));
+                            
+                            String location = files.get(key);
+                            File tempfile = new File(location);
+                            Files.copy(tempfile.toPath(), new File(directory).toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        }
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    uploads.remove(id);
+                    final Schematic schem = SchematicHandler.manager.getSchematic(new File(directory));
+                    
+                    final int length2 = MainUtil.getPlotWidth(upload.world, upload.id);
+                    final Dimension dem = schem.getSchematicDimension();
+                    if ((dem.getX() > length2) || (dem.getZ() > length2)) {
+                        return "Invalid dimensions".getBytes();
+                    }
+                    
+                    TaskManager.runTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            // TODO Auto-generated method stub
+                            System.out.print("PASTING!");
+                            SchematicHandler.manager.paste(schem, upload, 0, 0);
+                        }
+                    });
+                    
+                    result = "Success!";
+                    System.out.print("SUCCESS!");
+                }
+                else {
+                    result = "<form method='POST' action='' enctype='multipart/form-data'><strong>Upload file:</strong> <input type='file' name='file' /><input type='submit' style='float:right;' value='Upload' /></form>";
+                }
+                return result.getBytes();
             }
             
-            
-            // uploads (TODO)
+            // Invalid / Expired?
             
         }
         

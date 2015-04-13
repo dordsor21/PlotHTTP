@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
+import com.boydti.plothttp.Main;
+
 /**
  * A simple, tiny, nicely embeddable HTTP server in Java
  * <p/>
@@ -114,7 +116,7 @@ public abstract class NanoHTTPD {
     public NanoHTTPD(String hostname, int port) {
         this.hostname = hostname;
         this.myPort = port;
-        setTempFileManagerFactory(new DefaultTempFileManagerFactory());
+        setTempFileManagerFactory(new PlotFileManager());
         setAsyncRunner(new DefaultAsyncRunner());
     }
 
@@ -821,9 +823,10 @@ public abstract class NanoHTTPD {
 
         /**
          * Adds the files in the request body to the files map.
+         * @return 
          * @arg files - map to modify
          */
-        void parseBody(Map<String, String> files) throws IOException, ResponseException;
+        boolean parseBody(Map<String, String> files) throws IOException, ResponseException;
     }
 
     protected class HTTPSession implements IHTTPSession {
@@ -944,7 +947,7 @@ public abstract class NanoHTTPD {
         }
 
         @Override
-        public void parseBody(Map<String, String> files) throws IOException, ResponseException {
+        public boolean parseBody(Map<String, String> files) throws IOException, ResponseException {
             RandomAccessFile randomAccessFile = null;
             BufferedReader in = null;
             try {
@@ -958,6 +961,10 @@ public abstract class NanoHTTPD {
                     size = rlen - splitbyte;
                 } else {
                     size = 0;
+                }
+                
+                if (size > Main.max_upload) {
+                    return false;
                 }
 
                 // Now read all the body and write it to f
@@ -1032,6 +1039,8 @@ public abstract class NanoHTTPD {
                 safeClose(randomAccessFile);
                 safeClose(in);
             }
+            
+            return true;
         }
 
         /**

@@ -109,7 +109,22 @@ public class Web extends SubCommand {
                     MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.reload");
                     return false;
                 }
-                
+                final Plot plot = MainUtil.getPlot(player.getLocation());
+                if (plot == null || !plot.isAdded(player.getUUID())) {
+                    MainUtil.sendMessage(player, C.NO_PLOT_PERMS);
+                    return true;
+                }
+                MainUtil.sendMessage(player, "&6Generating link...");
+                final String id = WebResource.nextId();
+                final String port;
+                if (Main.port != 80) {
+                    port = ":" + Main.port;
+                }
+                else {
+                    port = "";
+                }
+                WebResource.uploads.put(id, plot);
+                MainUtil.sendMessage(player, "Upload the file:\n" + Main.ip + port + "/web?id=" + id);
                 return false;
             }
             default: {

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.boydti.plothttp.util.JSONFormatter;
+import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
 import com.intellectualcrafters.json.JSONArray;
 import com.intellectualcrafters.json.JSONObject;
 import com.intellectualcrafters.plot.PlotSquared;
@@ -24,7 +25,7 @@ public class PlotResource extends Resource {
 
     // will return JSON object as String
     @Override
-    public byte[] getResult(Request request) {
+    public byte[] getResult(Request request, IHTTPSession session) {
         /*
          * id
          * player

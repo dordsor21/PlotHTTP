@@ -59,7 +59,7 @@ public class PlotServer extends NanoHTTPD {
         }
         
         // Get a the result of the resource
-        byte[] result = resource.getResult(request);
+        byte[] result = resource.getResult(request, session);
         
         // Return '404 NOT FOUND' - if resource returns null
         if (result == null) {

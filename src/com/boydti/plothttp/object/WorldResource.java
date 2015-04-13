@@ -1,5 +1,7 @@
 package com.boydti.plothttp.object;
 
+import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
+
 public class WorldResource extends Resource{
 
     // API class for fetching information about worlds
@@ -11,7 +13,7 @@ public class WorldResource extends Resource{
 
     // will return JSON object as String
     @Override
-    public byte[] getResult(Request request) {
+    public byte[] getResult(Request request, IHTTPSession session) {
         // TODO Auto-generated method stub
         return null;
     }

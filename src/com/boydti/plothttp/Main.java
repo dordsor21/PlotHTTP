@@ -31,6 +31,7 @@ import com.boydti.plothttp.util.NanoHTTPD;
 import com.boydti.plothttp.util.RequestManager;
 import com.boydti.plothttp.util.ResourceManager;
 import com.boydti.plothttp.util.ServerRunner;
+import com.boydti.plothttp.util.PlotFileManager;
 import com.boydti.plothttp.util.WebUtil;
 import com.intellectualcrafters.plot.PlotSquared;
 import com.intellectualcrafters.plot.commands.MainCommand;
@@ -49,6 +50,7 @@ public class Main extends JavaPlugin {
     public static int port = 8080;
     public static File FILE = null;
     public static String ip;
+    public static int max_upload;
     
     private boolean commands = false;
     
@@ -186,6 +188,7 @@ public class Main extends JavaPlugin {
         options.put("whitelist.enabled", true);
         options.put("whitelist.allowed", new String[] { "127.0.0.1" });
         options.put("content.serve", true);
+        options.put("content.max-upload", 131072);
         options.put("api.serve", true);
         options.put("port", 8080);
         options.put("web-ip", "http://www.google.com");
@@ -210,6 +213,7 @@ public class Main extends JavaPlugin {
         }
         Main.port = config.getInt("port");
         Main.ip = config.getString("web-ip");
+        Main.max_upload = config.getInt("content.max-upload");
         plugin.saveConfig();
     }
 }
