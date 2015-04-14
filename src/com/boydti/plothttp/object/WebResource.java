@@ -121,7 +121,7 @@ public class WebResource extends Resource {
                     System.out.print("SUCCESS!");
                 }
                 else {
-                    result = "<form method='POST' action='' enctype='multipart/form-data'><strong>Upload file:</strong> <input type='file' name='file' /><input type='submit' style='float:right;' value='Upload' /></form>";
+                    result = WebUtil.getPage("upload");
                 }
                 return result.getBytes();
             }

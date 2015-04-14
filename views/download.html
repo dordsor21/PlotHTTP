@@ -1,6 +1,88 @@
 <html>
-<head><title>
-Schematic download
-</title><meta http-equiv=”refresh” content=”1; url=android.jar”> </head>
+<head>
+<title>Plot Uploader</title>
+<link href='http://fonts.googleapis.com/css?family=Exo+2' rel='stylesheet' type='text/css'>
+<style>
+body {
+	font-family: 'Exo 2', sans-serif;
+	margin: 0;
+	background-color: #EEE;
+}
+#box {
+	color: red;
+	border: 2px solid #CCC;
+	box-shadow: 0 0 5px #CCC;
+	border-radius: 5px;
+	background: #FFF;
+}
+#box:hover {
+	border-color: red;
+}
+#choose {
+	cursor: pointer; 
+	cursor: hand;
+	padding: 20px;
+	width: 100%;
+	opacity: 0;
+}
+#left {
+	background: #333;
+	border-right: solid 2px #111;
+	box-shadow: 0 0 5px #000;
+	width: 10%;
+	display: inline-block;
+	height: 100px;
+	position: absolute;
+	min-height: 100%;
+}
+#center {
+	background: #EEE;
+	margin-left: 12%;
+	margin-right: 2%;
+}
+#nav {
+	list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+#nav li:hover {
+	background: #666;
+	color: white;
+}
+#nav li {
+	border-left: 2px inset #666;
+    color: #999;
+    margin: 3px;
+    padding: 3px;
+}
+</style>
+<script>
+document.getElementById("file").onchange = function() {
+    document.getElementById("form").submit();
+};
+</script>
+</head>
 <body>
-Android.jar will start downloading automatically after 5 seconds</body></html>
+<div id=left>
+<ul id='nav'>
+  <li>Coffee</li>
+  <li>Tea</li>
+  <li>Milk</li>
+</ul>
+</div>
+<div id=center>
+<form class='dropzone' method='POST' action='' enctype='multipart/form-data'>
+Upload file:
+<div id='box'>
+<input id='choose' type='file' name='file'>
+<div id=text>
+test
+</div>
+</input>
+</div>
+<input type='submit' style='float:right;' value='Upload'>
+</input>
+</form>
+</div>
+</body>
+</html>
