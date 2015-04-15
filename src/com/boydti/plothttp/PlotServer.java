@@ -25,13 +25,13 @@ public class PlotServer extends NanoHTTPD {
         Map<String, String> args = session.getParms();
 
         //////////////////////////////// DEBUG STUFF ////////////////////////////////
-//        System.out.print("IP: " + ip);
-//        System.out.print("METHOD: " + method.name());
-//        System.out.print("URI: " + uri);
-//        System.out.print("PARAMS:");
-//        for (Entry<String, String> entry : args.entrySet()) {
-//            System.out.print(" - " + entry.getKey() + "=" + entry.getValue());
-//        }
+        System.out.print("IP: " + ip);
+        System.out.print("METHOD: " + method.name());
+        System.out.print("URI: " + uri);
+        System.out.print("PARAMS:");
+        for (Entry<String, String> entry : args.entrySet()) {
+            System.out.print(" - " + entry.getKey() + "=" + entry.getValue());
+        }
         //////////////////////////////// END DEBUG ////////////////////////////////
         
         // Create a new request object
