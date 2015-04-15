@@ -25,6 +25,14 @@ public abstract class Resource {
         return array;
     }
     
+    public JSONArray getArray(Object[] collection) {
+        JSONArray array = new JSONArray();
+        for (Object object : collection) {
+            array.put(object.toString());
+        }
+        return array;
+    }
+    
     public UUID getUUID(String name) {
         if (name == null) {
             return null;
