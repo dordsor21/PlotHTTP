@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.zip.ZipEntry;
@@ -52,6 +53,7 @@ public class Main extends JavaPlugin {
     public static String ip;
     public static int max_upload;
     public static String filename;
+    public static List<String> links;
     
     private boolean commands = false;
     
@@ -119,7 +121,7 @@ public class Main extends JavaPlugin {
             if (!output.exists()) {
                 output.mkdirs();
             }
-            File newFile = new File((output + File.separator + "web" + File.separator + file));
+            File newFile = new File((output + File.separator + file));
             if (newFile.exists()) {
                 return;
             }
@@ -157,7 +159,7 @@ public class Main extends JavaPlugin {
         copyFile("views/download.html");
         
         // Loading web files
-        File directory = new File(plugin.getDataFolder() + File.separator + "web");
+        File directory = new File(plugin.getDataFolder() + File.separator + "views");
         File[] files = directory.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return name.toLowerCase().endsWith(".html");
@@ -194,6 +196,10 @@ public class Main extends JavaPlugin {
         options.put("api.serve", true);
         options.put("port", 8080);
         options.put("web-ip", "http://www.google.com");
+        options.put("content.links", new String[] {
+                "<a href='http://www.google.com'>Home</a>",
+                "<a href='https://github.com/IntellectualCrafters/PlotSquared/wiki'>Wiki</a>",
+        });
         
         for (final Entry<String, Object> node : options.entrySet()) {
             if (!config.contains(node.getKey())) {
@@ -216,6 +222,7 @@ public class Main extends JavaPlugin {
         Main.ip = config.getString("web-ip");
         Main.max_upload = config.getInt("content.max-upload");
         Main.filename = config.getString("content.filename");
+        Main.links = config.getStringList("content.links");
         plugin.saveConfig();
     }
 }

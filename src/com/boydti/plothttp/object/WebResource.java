@@ -101,7 +101,9 @@ public class WebResource extends Resource {
                     }
                     uploads.remove(id);
                     final Schematic schem = SchematicHandler.manager.getSchematic(new File(directory));
-                    
+                    if (schem == null) {
+                        return "Invalid schematic file".getBytes();
+                    }
                     final int length2 = MainUtil.getPlotWidth(upload.world, upload.id);
                     final Dimension dem = schem.getSchematicDimension();
                     if ((dem.getX() > length2) || (dem.getZ() > length2)) {
@@ -111,7 +113,6 @@ public class WebResource extends Resource {
                     TaskManager.runTask(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO Auto-generated method stub
                             SchematicHandler.manager.paste(schem, upload, 0, 0);
                         }
                     });
@@ -119,7 +120,12 @@ public class WebResource extends Resource {
                     result = "Success!";
                 }
                 else {
-                    result = "<form method='POST' action='' enctype='multipart/form-data'>Upload file:<input type='file' name='file'/><input type='submit' value='Upload'/></form>";
+                    String links = "";
+                    for (String link : Main.links) {
+                        links += "<li>" + link + "</li>";
+                    }
+                    
+                    result = WebUtil.getPage("upload").replaceAll("%links%", "<ul>" + links + "</ul>");
                 }
                 return result.getBytes();
             }
