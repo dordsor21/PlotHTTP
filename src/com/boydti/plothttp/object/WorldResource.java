@@ -91,7 +91,7 @@ public class WorldResource extends Resource{
         spawnObj.put("custom", pw.SPAWN_EGGS);
         obj.put("spawn", spawnObj);
         obj.put("world-border", pw.WORLD_BORDER);
-        return null;
+        return obj;
     }
     
 }
