@@ -40,6 +40,7 @@ public class WebResource extends Resource {
     }
     
     private static boolean isDownload = false;
+    private static String filename = "plots.schematic";
     
     @Override
     public String toString() {
@@ -59,10 +60,13 @@ public class WebResource extends Resource {
             String download = downloads.get(id);
             if (download != null) {
                 File file = new File(Main.plugin.getDataFolder() + File.separator + "downloads" + File.separator + download);
-                System.out.print(file.getPath());
-                System.out.print(file.getAbsolutePath());
                 if (file.exists()) {
                     isDownload = true;
+                    String name = file.getName();
+                    String[] split = name.split(",");
+                    WebResource.filename = "";
+                    WebResource.filename = Main.filename.replaceAll("%id%", split[0]).replaceAll("%world%", split[1]).replaceAll("%player%", split[2].split("\\.")[0]);
+                    WebResource.filename = WebResource.filename.replaceAll("[\\W]|_", "-");
                     try {
                         return Files.readAllBytes(file.toPath());
                     } catch (IOException e) {
@@ -87,10 +91,6 @@ public class WebResource extends Resource {
                         Set<String> keys = files.keySet();
                         for(String key: keys){
                             String name = key;
-                            
-                            System.out.print("name: " + name);
-                            System.out.print("key: " + files.get(key));
-                            
                             String location = files.get(key);
                             File tempfile = new File(location);
                             Files.copy(tempfile.toPath(), new File(directory).toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -112,16 +112,14 @@ public class WebResource extends Resource {
                         @Override
                         public void run() {
                             // TODO Auto-generated method stub
-                            System.out.print("PASTING!");
                             SchematicHandler.manager.paste(schem, upload, 0, 0);
                         }
                     });
                     
                     result = "Success!";
-                    System.out.print("SUCCESS!");
                 }
                 else {
-                    result = "<form method='POST' action='' enctype='multipart/form-data'><strong>Upload file:</strong> <input type='file' name='file' /><input type='submit' style='float:right;' value='Upload' /></form>";
+                    result = "<form method='POST' action='' enctype='multipart/form-data'>Upload file:<input type='file' name='file'/><input type='submit' value='Upload'/></form>";
                 }
                 return result.getBytes();
             }
@@ -137,11 +135,9 @@ public class WebResource extends Resource {
     @Override
     public void process(Response page) {
         if (isDownload) {
-            page.addHeader("Content-Disposition", "attachment; filename=plot.schematic");
+            page.addHeader("Content-Disposition", "attachment; filename=" + filename + ".schematic");
+            filename = "plot";
             isDownload = false;
         }
     }
-    
-    
-    
 }

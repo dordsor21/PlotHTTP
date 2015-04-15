@@ -25,13 +25,13 @@ public class PlotServer extends NanoHTTPD {
         Map<String, String> args = session.getParms();
 
         //////////////////////////////// DEBUG STUFF ////////////////////////////////
-        System.out.print("IP: " + ip);
-        System.out.print("METHOD: " + method.name());
-        System.out.print("URI: " + uri);
-        System.out.print("PARAMS:");
-        for (Entry<String, String> entry : args.entrySet()) {
-            System.out.print(" - " + entry.getKey() + "=" + entry.getValue());
-        }
+//        System.out.print("IP: " + ip);
+//        System.out.print("METHOD: " + method.name());
+//        System.out.print("URI: " + uri);
+//        System.out.print("PARAMS:");
+//        for (Entry<String, String> entry : args.entrySet()) {
+//            System.out.print(" - " + entry.getKey() + "=" + entry.getValue());
+//        }
         //////////////////////////////// END DEBUG ////////////////////////////////
         
         // Create a new request object
@@ -39,7 +39,6 @@ public class PlotServer extends NanoHTTPD {
         
         // Check if the request is allowed
         if (!RequestManager.isAllowed(request)) {
-            System.out.print("Denied query from: " + ip);
             return new NanoHTTPD.Response(Status.FORBIDDEN, MIME_PLAINTEXT, "403 FORBIDDEN");
         }
         
@@ -54,7 +53,6 @@ public class PlotServer extends NanoHTTPD {
         
         // Return '404 NOT FOUND' - if resource cannot be found
         if (resource == null) {
-            System.out.print("Invalid resource request from: " + ip + " : " + uri);
             return new NanoHTTPD.Response(Status.NOT_FOUND, MIME_PLAINTEXT, "404 NOT FOUND");
         }
         
@@ -63,7 +61,6 @@ public class PlotServer extends NanoHTTPD {
         
         // Return '404 NOT FOUND' - if resource returns null
         if (result == null) {
-            System.out.print("Invalid resource request from: " + ip + " : " + uri);
             return new NanoHTTPD.Response(Status.NOT_FOUND, MIME_PLAINTEXT, "404 NOT FOUND");
         }
         

@@ -26,18 +26,15 @@ public class PlotFileManager implements TempFileManagerFactory {
             public TempFile createTempFile() throws Exception {
                 SchematicFile tempFile = new SchematicFile(tmpdir);
                 tempFiles.add(tempFile);
-                System.out.println("Created tempFile: " + tempFile.getName());
                 return tempFile;
             }
 
             @Override
             public void clear() {
                 if (!tempFiles.isEmpty()) {
-                    System.out.println("Cleaning up:");
                 }
                 for (TempFile file : tempFiles) {
                     try {
-                        System.out.println("   "+file.getName());
                         file.delete();
                     } catch (Exception ignored) {}
                 }

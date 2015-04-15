@@ -28,7 +28,7 @@ public class SchematicFile implements TempFile {
         }
         file.delete();
     }
-
+    
     @Override
     public String getName() {
         return file.getAbsolutePath();

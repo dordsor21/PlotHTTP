@@ -51,6 +51,7 @@ public class Main extends JavaPlugin {
     public static File FILE = null;
     public static String ip;
     public static int max_upload;
+    public static String filename;
     
     private boolean commands = false;
     
@@ -189,6 +190,7 @@ public class Main extends JavaPlugin {
         options.put("whitelist.allowed", new String[] { "127.0.0.1" });
         options.put("content.serve", true);
         options.put("content.max-upload", 131072);
+        options.put("content.filename", "%world%-%id%-%player%");
         options.put("api.serve", true);
         options.put("port", 8080);
         options.put("web-ip", "http://www.google.com");
@@ -202,7 +204,6 @@ public class Main extends JavaPlugin {
             for (String ip : config.getStringList("whitelist.allowed")) {
                 HashMap<String, String> params = new HashMap<>();
                 params.put("*", "*");
-                System.out.print("ADDING TOKEN: " + ip);
                 RequestManager.addToken(new Request(ip, "*", "*", params));
             }
         }
@@ -214,6 +215,7 @@ public class Main extends JavaPlugin {
         Main.port = config.getInt("port");
         Main.ip = config.getString("web-ip");
         Main.max_upload = config.getInt("content.max-upload");
+        Main.filename = config.getString("content.filename");
         plugin.saveConfig();
     }
 }
