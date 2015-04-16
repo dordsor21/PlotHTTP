@@ -1,6 +1,8 @@
 package com.boydti.plothttp;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -20,18 +22,19 @@ public class PlotServer extends NanoHTTPD {
     @Override public Response serve(IHTTPSession session) {
         Map<String, String> headers = session.getHeaders();
         String ip = headers.get("remote-addr");
+        
         Method method = session.getMethod();
         String uri = session.getUri();
         Map<String, String> args = session.getParms();
 
         //////////////////////////////// DEBUG STUFF ////////////////////////////////
-        System.out.print("IP: " + ip);
-        System.out.print("METHOD: " + method.name());
-        System.out.print("URI: " + uri);
-        System.out.print("PARAMS:");
-        for (Entry<String, String> entry : args.entrySet()) {
-            System.out.print(" - " + entry.getKey() + "=" + entry.getValue());
-        }
+//        System.out.print("IP: " + ip);
+//        System.out.print("METHOD: " + method.name());
+//        System.out.print("URI: " + uri);
+//        System.out.print("PARAMS:");
+//        for (Entry<String, String> entry : args.entrySet()) {
+//            System.out.print(" - " + entry.getKey() + "=" + entry.getValue());
+//        }
         //////////////////////////////// END DEBUG ////////////////////////////////
         
         // Create a new request object
