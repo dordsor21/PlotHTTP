@@ -8,12 +8,22 @@ public class Request {
     public final String METHOD;
     public final String URI;
     public final Map<String, String> ARGS;
+    public int uses;
     
     public Request(String ip, String method, String uri, Map<String, String> args) {
         this.IP = ip;
         this.METHOD = method;
         this.URI = uri;
         this.ARGS = args;
+        this.uses = -1;
+    }
+    
+    public Request(String ip, String method, String uri, Map<String, String> args, int uses) {
+        this.IP = ip;
+        this.METHOD = method;
+        this.URI = uri;
+        this.ARGS = args;
+        this.uses = uses;
     }
     
     public int hashCode() {
@@ -44,10 +54,10 @@ public class Request {
         if (!other.IP.equals(IP) && !IP.equals("*")) {
             return false;
         }
-        if (!other.IP.equals(METHOD) && !METHOD.equals("*")) {
+        if (!other.METHOD.equals(METHOD) && !METHOD.equals("*")) {
             return false;
         }
-        if (!other.IP.equals(URI) && !URI.equals("*")) {
+        if (!other.URI.equals(URI) && !URI.equals("*")) {
             return false;
         }
         if (!other.ARGS.equals(ARGS)) {

@@ -2,11 +2,14 @@ package com.boydti.plothttp.command;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.boydti.plothttp.Main;
+import com.boydti.plothttp.object.Request;
 import com.boydti.plothttp.object.WebResource;
+import com.boydti.plothttp.util.RequestManager;
 import com.intellectualcrafters.jnbt.CompoundTag;
 import com.intellectualcrafters.plot.commands.SubCommand;
 import com.intellectualcrafters.plot.config.C;
@@ -98,6 +101,10 @@ public class Web extends SubCommand {
                                 MainUtil.sendMessage(null, "&7 - &a  success: " + plot.id);
                                 WebResource.downloads.put(id, filename);
                                 MainUtil.sendMessage(player, "Download the file:\n" + Main.ip + port + "/web?id=" + id);
+                                HashMap<String, String> map = new HashMap<>();
+                                map.put("id", id);
+                                Request r = new Request("*", "GET", "/web", map, 1);
+                                RequestManager.addToken(r);
                             }
                         }
                     });
@@ -125,6 +132,10 @@ public class Web extends SubCommand {
                 }
                 WebResource.uploads.put(id, plot);
                 MainUtil.sendMessage(player, "Upload the file:\n" + Main.ip + port + "/web?id=" + id);
+                HashMap<String, String> map = new HashMap<>();
+                map.put("id", id);
+                Request r = new Request("*", "*", "/web", map, 1);
+                RequestManager.addToken(r);
                 return false;
             }
             default: {

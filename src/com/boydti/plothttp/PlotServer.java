@@ -26,7 +26,7 @@ public class PlotServer extends NanoHTTPD {
         Method method = session.getMethod();
         String uri = session.getUri();
         Map<String, String> args = session.getParms();
-
+        
         //////////////////////////////// DEBUG STUFF ////////////////////////////////
 //        System.out.print("IP: " + ip);
 //        System.out.print("METHOD: " + method.name());
@@ -71,7 +71,6 @@ public class PlotServer extends NanoHTTPD {
         if (result.length == 0) {
             return new NanoHTTPD.Response("[]");
         }
-        
         
         // Return the result
         ByteArrayInputStream data = new ByteArrayInputStream(result);

@@ -1,6 +1,7 @@
 package com.boydti.plothttp.util;
 
 import java.util.HashSet;
+import java.util.Iterator;
 
 import com.boydti.plothttp.object.Request;
 
@@ -20,8 +21,16 @@ public class RequestManager {
     }
     
     public static boolean isAllowed(Request request) {
-        for (Request white : whitelist) {
+        Iterator<Request> i = whitelist.iterator();
+        while (i.hasNext()) {
+            Request white = i.next();
             if (white.allows(request)) {
+                if (white.uses > 0) {
+                    white.uses--;
+                    if (white.uses == 0) {
+                        i.remove();
+                    }
+                }
                 return true;
             }
         }

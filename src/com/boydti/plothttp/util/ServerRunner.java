@@ -21,6 +21,5 @@ public class ServerRunner {
             System.err.println("Couldn't start server:\n" + ioe);
             System.exit(-1);
         }
-        System.out.println("Server started.");
     }
 }
