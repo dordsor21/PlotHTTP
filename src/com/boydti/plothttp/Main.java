@@ -57,6 +57,20 @@ public class Main extends JavaPlugin {
     
     private boolean commands = false;
     
+    public static void deleteFolder(File folder) {
+        File[] files = folder.listFiles();
+        if(files!=null) { //some JVMs return null for empty dirs
+            for(File f: files) {
+                if(f.isDirectory()) {
+                    deleteFolder(f);
+                } else {
+                    f.delete();
+                }
+            }
+        }
+        folder.delete();
+    }
+    
     @Override
     public void onEnable() {
         Main.plugin = this;
@@ -65,6 +79,9 @@ public class Main extends JavaPlugin {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+        
+        // Clear downloads on load
+        deleteFolder(new File(Main.plugin.getDataFolder() + File.separator + "downloads"));
         
         // Setting up configuration
         setupConfig();
@@ -84,6 +101,7 @@ public class Main extends JavaPlugin {
                 Main.server = ServerRunner.run(PlotServer.class);
             }
         });
+        saveResource("level.dat", false);
     }
     
     @Override

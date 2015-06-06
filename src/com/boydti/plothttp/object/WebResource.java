@@ -64,9 +64,14 @@ public class WebResource extends Resource {
                     isDownload = true;
                     String name = file.getName();
                     String[] split = name.split(",");
-                    WebResource.filename = "";
                     WebResource.filename = Main.filename.replaceAll("%id%", split[0]).replaceAll("%world%", split[1]).replaceAll("%player%", split[2].split("\\.")[0]);
                     WebResource.filename = WebResource.filename.replaceAll("[\\W]|_", "-");
+                    if (file.getName().endsWith(".zip")) {
+                        WebResource.filename += ".zip";
+                    }
+                    else {
+                        WebResource.filename += ".schematic";
+                    }
                     try {
                         return Files.readAllBytes(file.toPath());
                     } catch (IOException e) {
@@ -141,8 +146,8 @@ public class WebResource extends Resource {
     @Override
     public void process(Response page) {
         if (isDownload) {
-            page.addHeader("Content-Disposition", "attachment; filename=" + filename + ".schematic");
-            filename = "plot";
+            page.addHeader("Content-Disposition", "attachment; filename=" + filename);
+            filename = "plot.schematic";
             isDownload = false;
         }
     }

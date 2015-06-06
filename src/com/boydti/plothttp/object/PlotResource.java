@@ -85,12 +85,12 @@ public class PlotResource extends Resource {
         
         if (plots.size() == 0) { return null; }
         
-        uuid = getUUID(request.ARGS.get("trusted"));
+        uuid = getUUID(request.ARGS.get("members"));
         if (uuid != null) {
             Iterator<Plot> i = plots.iterator();
             while (i.hasNext()) {
                 Plot plot = i.next();
-                if (!plot.trusted.contains(uuid)) {
+                if (!plot.members.contains(uuid)) {
                     i.remove();
                 }
             }
@@ -111,12 +111,12 @@ public class PlotResource extends Resource {
         
         if (plots.size() == 0) { return null; }
         
-        uuid = getUUID(request.ARGS.get("helpers"));
+        uuid = getUUID(request.ARGS.get("trusted"));
         if (uuid != null) {
             Iterator<Plot> i = plots.iterator();
             while (i.hasNext()) {
                 Plot plot = i.next();
-                if (!plot.helpers.contains(uuid)) {
+                if (!plot.trusted.contains(uuid)) {
                     i.remove();
                 }
             }
@@ -208,9 +208,9 @@ public class PlotResource extends Resource {
         
         obj.put("flags", getArray(plot.settings.flags));
         
-        obj.put("helpers", getArray(plot.helpers));
-        
         obj.put("trusted", getArray(plot.trusted));
+        
+        obj.put("members", getArray(plot.members));
         
         obj.put("denied", getArray(plot.denied));
         
