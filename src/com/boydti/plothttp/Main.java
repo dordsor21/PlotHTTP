@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,36 +31,29 @@ import com.boydti.plothttp.util.NanoHTTPD;
 import com.boydti.plothttp.util.RequestManager;
 import com.boydti.plothttp.util.ResourceManager;
 import com.boydti.plothttp.util.ServerRunner;
-import com.boydti.plothttp.util.PlotFileManager;
 import com.boydti.plothttp.util.WebUtil;
-import com.intellectualcrafters.plot.PlotSquared;
 import com.intellectualcrafters.plot.commands.MainCommand;
-import com.intellectualcrafters.plot.commands.SubCommand;
-import com.intellectualcrafters.plot.commands.SubCommand.CommandCategory;
-import com.intellectualcrafters.plot.config.C;
-import com.intellectualcrafters.plot.object.PlotPlayer;
-import com.intellectualcrafters.plot.util.MainUtil;
 
 public class Main extends JavaPlugin {
-    
+
     public static NanoHTTPD server;
     public static FileConfiguration config;
     public static Main plugin;
-    
+
     public static int port = 8080;
     public static File FILE = null;
     public static String ip;
     public static int max_upload;
     public static String filename;
     public static List<String> links;
-    
+
     private boolean commands = false;
-    
-    public static void deleteFolder(File folder) {
-        File[] files = folder.listFiles();
-        if(files!=null) { //some JVMs return null for empty dirs
-            for(File f: files) {
-                if(f.isDirectory()) {
+
+    public static void deleteFolder(final File folder) {
+        final File[] files = folder.listFiles();
+        if (files != null) { //some JVMs return null for empty dirs
+            for (final File f : files) {
+                if (f.isDirectory()) {
                     deleteFolder(f);
                 } else {
                     f.delete();
@@ -70,31 +62,31 @@ public class Main extends JavaPlugin {
         }
         folder.delete();
     }
-    
+
     @Override
     public void onEnable() {
         Main.plugin = this;
         try {
             Main.FILE = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             e.printStackTrace();
         }
-        
+
         // Clear downloads on load
         deleteFolder(new File(Main.plugin.getDataFolder() + File.separator + "downloads"));
-        
+
         // Setting up configuration
         setupConfig();
-        
+
         // Setting up resources
         setupResources();
-        
+
         // Setup web interface
         setupWeb();
-        
+
         // Setup commands
         setupCommands();
-        
+
         Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
             @Override
             public void run() {
@@ -103,24 +95,23 @@ public class Main extends JavaPlugin {
         });
         saveResource("level.dat", false);
     }
-    
+
     @Override
     public void onDisable() {
-        for (Request token : RequestManager.getTokens()) {
+        for (final Request token : RequestManager.getTokens()) {
             RequestManager.removeToken(token);
         }
         Main.server.stop();
     }
-    
-    
+
     public void setupCommands() {
-        if (commands) {
+        if (this.commands) {
             return;
         }
-        commands = true;
+        this.commands = true;
         MainCommand.subCommands.add(new Web());
     }
-    
+
     public void setupResources() {
         // Adding the plot resource
         ResourceManager.addResource(new ClusterResource());
@@ -131,81 +122,79 @@ public class Main extends JavaPlugin {
         ResourceManager.addResource(new WorldResource());
         ResourceManager.addResource(new PlotResource());
     }
-    
-    public void copyFile(String file) {
+
+    public void copyFile(final String file) {
         try {
-            byte[] buffer = new byte[2048];
-            File output = plugin.getDataFolder();
+            final byte[] buffer = new byte[2048];
+            final File output = plugin.getDataFolder();
             if (!output.exists()) {
                 output.mkdirs();
             }
-            File newFile = new File((output + File.separator + file));
+            final File newFile = new File((output + File.separator + file));
             if (newFile.exists()) {
                 return;
             }
-            ZipInputStream zis = new ZipInputStream(new FileInputStream(FILE));
+            final ZipInputStream zis = new ZipInputStream(new FileInputStream(FILE));
             ZipEntry ze = zis.getNextEntry();
             while (ze != null) {
-                String name = ze.getName();
+                final String name = ze.getName();
                 if (name.equals(file)) {
                     new File(newFile.getParent()).mkdirs();
-                    FileOutputStream fos = new FileOutputStream(newFile);
+                    final FileOutputStream fos = new FileOutputStream(newFile);
                     int len;
                     while ((len = zis.read(buffer)) > 0) {
                         fos.write(buffer, 0, len);
                     }
                     fos.close();
                     ze = null;
-                }
-                else {
+                } else {
                     ze = zis.getNextEntry();
                 }
             }
             zis.closeEntry();
             zis.close();
-        }
-        catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
             System.out.print("Could not save " + file);
         }
     }
-    
+
     public void setupWeb() {
         // Copy over template files
         copyFile("views/index.html");
         copyFile("views/upload.html");
         copyFile("views/download.html");
-        
+
         // Loading web files
-        File directory = new File(plugin.getDataFolder() + File.separator + "views");
-        File[] files = directory.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
+        final File directory = new File(plugin.getDataFolder() + File.separator + "views");
+        final File[] files = directory.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(final File dir, final String name) {
                 return name.toLowerCase().endsWith(".html");
             }
         });
-        for (File file : files) {
+        for (final File file : files) {
             try {
                 WebUtil.addPage(file.getName().substring(0, file.getName().length() - 5), new String(Files.readAllBytes(file.toPath())));
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
     public void setupConfig() {
         if (Main.config == null) {
             plugin.saveDefaultConfig();
             Main.config = plugin.getConfig();
-        }
-        else {
+        } else {
             plugin.reloadConfig();
             Main.config = plugin.getConfig();
         }
-        
+
         final Map<String, Object> options = new HashMap<>();
-        
+
         Main.config.set("version", Main.plugin.getDescription().getVersion());
-        
+
         options.put("whitelist.enabled", true);
         options.put("whitelist.allowed", new String[] { "127.0.0.1" });
         options.put("content.serve", true);
@@ -214,25 +203,21 @@ public class Main extends JavaPlugin {
         options.put("api.serve", true);
         options.put("port", 8080);
         options.put("web-ip", "http://www.google.com");
-        options.put("content.links", new String[] {
-                "<a href='http://www.google.com'>Home</a>",
-                "<a href='https://github.com/IntellectualCrafters/PlotSquared/wiki'>Wiki</a>",
-        });
-        
+        options.put("content.links", new String[] { "<a href='http://www.google.com'>Home</a>", "<a href='https://github.com/IntellectualCrafters/PlotSquared/wiki'>Wiki</a>", });
+
         for (final Entry<String, Object> node : options.entrySet()) {
             if (!config.contains(node.getKey())) {
                 config.set(node.getKey(), node.getValue());
             }
         }
         if (Main.config.getBoolean("whitelist.enabled")) {
-            for (String ip : config.getStringList("whitelist.allowed")) {
-                HashMap<String, String> params = new HashMap<>();
+            for (final String ip : config.getStringList("whitelist.allowed")) {
+                final HashMap<String, String> params = new HashMap<>();
                 params.put("*", "*");
                 RequestManager.addToken(new Request(ip, "*", "*", params));
             }
-        }
-        else {
-            HashMap<String, String> params = new HashMap<>();
+        } else {
+            final HashMap<String, String> params = new HashMap<>();
             params.put("*", "*");
             RequestManager.addToken(new Request("*", "*", "*", params));
         }

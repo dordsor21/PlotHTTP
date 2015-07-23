@@ -7,10 +7,10 @@ import com.intellectualcrafters.json.JSONArray;
 import com.intellectualcrafters.json.JSONObject;
 import com.intellectualcrafters.plot.util.bukkit.UUIDHandler;
 
-public class UUIDResource extends Resource{
+public class UUIDResource extends Resource {
 
     // API for fetching information about UUIDS
-    
+
     @Override
     public String toString() {
         return "uuids";
@@ -18,23 +18,21 @@ public class UUIDResource extends Resource{
 
     // will return JSON object as String
     @Override
-    public byte[] getResult(Request request, IHTTPSession session) {
-        JSONArray array = new JSONArray();
-        for (String arg : request.ARGS.keySet()) {
-            UUID uuid = getUUID(arg);
-            JSONObject obj = new JSONObject();
+    public byte[] getResult(final Request request, final IHTTPSession session) {
+        final JSONArray array = new JSONArray();
+        for (final String arg : request.ARGS.keySet()) {
+            final UUID uuid = getUUID(arg);
+            final JSONObject obj = new JSONObject();
             if (uuid != null) {
-                String name = UUIDHandler.getName(uuid);
+                final String name = UUIDHandler.getName(uuid);
                 if (name != null) {
                     obj.put("uuid", uuid.toString());
                     obj.put("name", name.toString());
-                }
-                else {
+                } else {
                     obj.put("uuid", uuid.toString());
                     obj.put("name", "");
                 }
-            }
-            else {
+            } else {
                 obj.put("uuid", "");
                 obj.put("name", arg);
             }

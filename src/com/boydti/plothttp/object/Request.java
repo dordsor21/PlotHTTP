@@ -9,34 +9,35 @@ public class Request {
     public final String URI;
     public final Map<String, String> ARGS;
     public int uses;
-    
-    public Request(String ip, String method, String uri, Map<String, String> args) {
+
+    public Request(final String ip, final String method, final String uri, final Map<String, String> args) {
         this.IP = ip;
         this.METHOD = method;
         this.URI = uri;
         this.ARGS = args;
         this.uses = -1;
     }
-    
-    public Request(String ip, String method, String uri, Map<String, String> args, int uses) {
+
+    public Request(final String ip, final String method, final String uri, final Map<String, String> args, final int uses) {
         this.IP = ip;
         this.METHOD = method;
         this.URI = uri;
         this.ARGS = args;
         this.uses = uses;
     }
-    
+
+    @Override
     public int hashCode() {
         int hash = 31;
-        hash = 31 * hash + IP.hashCode();
-        hash = 31 * hash + METHOD.hashCode();
-        hash = 31 * hash + URI.hashCode();
-        hash = 31 * hash + ARGS.size();
+        hash = (31 * hash) + this.IP.hashCode();
+        hash = (31 * hash) + this.METHOD.hashCode();
+        hash = (31 * hash) + this.URI.hashCode();
+        hash = (31 * hash) + this.ARGS.size();
         return hash;
     }
-    
+
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -47,25 +48,25 @@ public class Request {
             return false;
         }
         final Request other = (Request) obj;
-        return (other.IP.equals(IP) && other.METHOD.equals(METHOD) && other.URI.equals(URI) && other.ARGS.equals(ARGS));
+        return (other.IP.equals(this.IP) && other.METHOD.equals(this.METHOD) && other.URI.equals(this.URI) && other.ARGS.equals(this.ARGS));
     }
-    
-    public boolean allows(Request other) {
-        if (!other.IP.equals(IP) && !IP.equals("*")) {
+
+    public boolean allows(final Request other) {
+        if (!other.IP.equals(this.IP) && !this.IP.equals("*")) {
             return false;
         }
-        if (!other.METHOD.equals(METHOD) && !METHOD.equals("*")) {
+        if (!other.METHOD.equals(this.METHOD) && !this.METHOD.equals("*")) {
             return false;
         }
-        if (!other.URI.equals(URI) && !URI.equals("*")) {
+        if (!other.URI.equals(this.URI) && !this.URI.equals("*")) {
             return false;
         }
-        if (!other.ARGS.equals(ARGS)) {
-            if (ARGS.containsKey("*")) {
+        if (!other.ARGS.equals(this.ARGS)) {
+            if (this.ARGS.containsKey("*")) {
                 return true;
             }
-            for (Entry<String, String> entry : ARGS.entrySet()) {
-                String current = other.ARGS.get(entry.getKey());
+            for (final Entry<String, String> entry : this.ARGS.entrySet()) {
+                final String current = other.ARGS.get(entry.getKey());
                 if (current == null) {
                     return false;
                 }
@@ -76,5 +77,5 @@ public class Request {
         }
         return true;
     }
-    
+
 }

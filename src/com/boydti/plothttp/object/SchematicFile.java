@@ -8,29 +8,29 @@ import java.io.OutputStream;
 import com.boydti.plothttp.util.NanoHTTPD.TempFile;
 
 public class SchematicFile implements TempFile {
-    private File file;
-    private OutputStream fstream;
+    private final File file;
+    private final OutputStream fstream;
 
-    public SchematicFile(String tempdir) throws IOException {
-        file = File.createTempFile("NanoHTTPD-", "", new File(tempdir));
-        fstream = new FileOutputStream(file);
+    public SchematicFile(final String tempdir) throws IOException {
+        this.file = File.createTempFile("NanoHTTPD-", "", new File(tempdir));
+        this.fstream = new FileOutputStream(this.file);
     }
 
     @Override
     public OutputStream open() throws Exception {
-        return fstream;
+        return this.fstream;
     }
 
     @Override
     public void delete() throws Exception {
-        if (fstream != null) {
-            fstream.close();
+        if (this.fstream != null) {
+            this.fstream.close();
         }
-        file.delete();
+        this.file.delete();
     }
-    
+
     @Override
     public String getName() {
-        return file.getAbsolutePath();
+        return this.file.getAbsolutePath();
     }
 }

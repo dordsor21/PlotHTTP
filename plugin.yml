@@ -1,6 +1,6 @@
 name: PlotHTTP
 main: com.boydti.plothttp.Main
-version: 2
+version: 2.12.16
 load: STARTUP
 softdepend: [PlotSquared]
 description: PlotSquared HTTP test

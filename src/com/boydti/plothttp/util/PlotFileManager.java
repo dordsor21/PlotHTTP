@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.boydti.plothttp.object.SchematicFile;
-import com.boydti.plothttp.util.NanoHTTPD.DefaultTempFile;
 import com.boydti.plothttp.util.NanoHTTPD.TempFile;
 import com.boydti.plothttp.util.NanoHTTPD.TempFileManager;
 import com.boydti.plothttp.util.NanoHTTPD.TempFileManagerFactory;
@@ -14,31 +13,32 @@ public class PlotFileManager implements TempFileManagerFactory {
     private final List<TempFile> tempFiles;
 
     public PlotFileManager() {
-        tmpdir = System.getProperty("java.io.tmpdir");
-        tempFiles = new ArrayList<TempFile>();
+        this.tmpdir = System.getProperty("java.io.tmpdir");
+        this.tempFiles = new ArrayList<TempFile>();
     }
 
     @Override
     public TempFileManager create() {
         return new TempFileManager() {
-            
+
             @Override
             public TempFile createTempFile() throws Exception {
-                SchematicFile tempFile = new SchematicFile(tmpdir);
-                tempFiles.add(tempFile);
+                final SchematicFile tempFile = new SchematicFile(PlotFileManager.this.tmpdir);
+                PlotFileManager.this.tempFiles.add(tempFile);
                 return tempFile;
             }
 
             @Override
             public void clear() {
-                if (!tempFiles.isEmpty()) {
+                if (!PlotFileManager.this.tempFiles.isEmpty()) {
                 }
-                for (TempFile file : tempFiles) {
+                for (final TempFile file : PlotFileManager.this.tempFiles) {
                     try {
                         file.delete();
-                    } catch (Exception ignored) {}
+                    } catch (final Exception ignored) {
+                    }
                 }
-                tempFiles.clear();
+                PlotFileManager.this.tempFiles.clear();
             }
 
         };
