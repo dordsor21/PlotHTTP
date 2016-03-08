@@ -16,11 +16,9 @@ import com.boydti.plothttp.util.NanoHTTPD.Response;
 import com.boydti.plothttp.util.WebUtil;
 import com.intellectualcrafters.plot.object.Plot;
 import com.intellectualcrafters.plot.object.RunnableVal;
-import com.intellectualcrafters.plot.util.MainUtil;
 import com.intellectualcrafters.plot.util.SchematicHandler;
 import com.intellectualcrafters.plot.util.SchematicHandler.Dimension;
 import com.intellectualcrafters.plot.util.SchematicHandler.Schematic;
-import com.intellectualcrafters.plot.util.TaskManager;
 
 public class WebResource extends Resource {
 
@@ -96,7 +94,7 @@ public class WebResource extends Resource {
             final Plot upload = uploads.get(id);
             if (upload != null) {
                 if (session.getMethod().name().equals("POST")) {
-                    final String filename = upload.id.x + ";" + upload.id.y + "," + upload.world + ".schematic";
+                    final String filename = upload.id.x + ";" + upload.id.y + "," + upload.getArea() + ".schematic";
                     final String directory = Main.plugin.getDataFolder() + File.separator + "uploads" + File.separator + filename;
 
                     try {
@@ -116,15 +114,15 @@ public class WebResource extends Resource {
                     if (schem == null) {
                         return "Invalid schematic file".getBytes();
                     }
-                    final int length2 = MainUtil.getPlotWidth(upload.world, upload.id);
+                    final int length2 = upload.getTop().getX() - upload.getBottom().getX() + 1;
                     final Dimension dem = schem.getSchematicDimension();
                     if ((dem.getX() > length2) || (dem.getZ() > length2)) {
                         return "Invalid dimensions".getBytes();
                     }
                     final Thread thread = Thread.currentThread();
-                    SchematicHandler.manager.paste(schem, upload, 0, 0, new RunnableVal<Boolean>() {
+                    SchematicHandler.manager.paste(schem, upload, 0, 0, 0, true, new RunnableVal<Boolean>() {
                         @Override
-                        public void run() {
+                        public void run(Boolean value) {
                             if (value) {
                                 result.append("Success!");
                             }

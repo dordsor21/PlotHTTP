@@ -1,14 +1,17 @@
 package com.boydti.plothttp.object;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
 import com.intellectualcrafters.json.JSONArray;
 import com.intellectualcrafters.json.JSONObject;
 import com.intellectualcrafters.plot.PS;
-import com.intellectualcrafters.plot.object.PlotWorld;
+import com.intellectualcrafters.plot.object.PlotArea;
 import com.intellectualcrafters.plot.util.SetupUtils;
+import com.intellectualcrafters.plot.util.StringMan;
 
 public class WorldResource extends Resource {
 
@@ -23,30 +26,45 @@ public class WorldResource extends Resource {
     @Override
     public byte[] getResult(final Request request, final IHTTPSession session) {
         final String world = request.ARGS.get("world");
-        Collection<PlotWorld> worlds;
-        if (world != null) {
-            worlds = new HashSet<PlotWorld>();
-            final PlotWorld plotworld = PS.get().getPlotWorld(world);
-            if (plotworld != null) {
-                worlds.add(plotworld);
+        final String area = request.ARGS.get("area");
+        final String id = request.ARGS.get("id");
+        final Collection<PlotArea> areas;
+        if (area == null) {
+            areas = new HashSet<>(PS.get().getPlotAreas());
+            if (id != null) {
+                Iterator<PlotArea> iter = areas.iterator();
+                while (iter.hasNext()) {
+                    if (!StringMan.isEqual(iter.next().id, id)) {
+                        iter.remove();
+                    }
+                }
+            }
+            if (areas.size() == 0) {
+                return null;
+            }
+            if (world != null) {
+                Iterator<PlotArea> iter = areas.iterator();
+                while (iter.hasNext()) {
+                    if (!StringMan.isEqual(iter.next().worldname, world)) {
+                        iter.remove();
+                    }
+                }
             }
         } else {
-            worlds = PS.get().getPlotWorldObjects();
+            PlotArea pa = PS.get().getPlotAreaByString(area);
+            areas = pa == null ? new HashSet<PlotArea>() : Collections.singletonList(pa);
         }
-
-        if (worlds.size() == 0) {
+        if (areas.size() == 0) {
             return null;
         }
-
         final JSONArray worldsObj = new JSONArray();
-        for (final PlotWorld plotworld : worlds) {
-            worldsObj.put(serializePlotWorld(plotworld));
+        for (final PlotArea plotworld : areas) {
+            worldsObj.put(serializePlotArea(plotworld));
         }
-
         return worldsObj.toString(1).getBytes();
     }
 
-    public JSONObject serializePlotWorld(final PlotWorld pw) {
+    public JSONObject serializePlotArea(final PlotArea pw) {
         final JSONObject obj = new JSONObject();
         obj.put("worldname", pw.worldname);
         final String generator = SetupUtils.manager.getGenerator(pw);
@@ -57,11 +75,8 @@ public class WorldResource extends Resource {
         }
         obj.put("terrain", pw.TERRAIN);
         obj.put("type", pw.TYPE);
-        final JSONObject priceObj = new JSONObject();
         obj.put("economy", pw.USE_ECONOMY);
-        priceObj.put("buy", pw.PLOT_PRICE);
-        priceObj.put("sell", pw.SELL_PRICE);
-        obj.put("price", priceObj);
+        obj.put("price", pw.PRICES);
         final JSONObject homeObj = new JSONObject();
         if (pw.DEFAULT_HOME == null) {
             homeObj.put("default", "side");
@@ -74,8 +89,6 @@ public class WorldResource extends Resource {
         }
         homeObj.put("allow-nonmember", pw.HOME_ALLOW_NONMEMBER);
         obj.put("home", homeObj);
-        obj.put("pve", pw.PVE);
-        obj.put("pvp", pw.PVP);
         obj.put("mob-spawning", pw.MOB_SPAWNING);
         obj.put("allow-signs", pw.ALLOW_SIGNS);
         obj.put("auto-merge", pw.AUTO_MERGE);

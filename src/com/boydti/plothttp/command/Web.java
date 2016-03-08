@@ -16,6 +16,8 @@ import com.boydti.plothttp.object.WebResource;
 import com.boydti.plothttp.util.RequestManager;
 import com.boydti.plothttp.util.WorldUtil;
 import com.intellectualcrafters.jnbt.CompoundTag;
+import com.intellectualcrafters.plot.commands.CommandCategory;
+import com.intellectualcrafters.plot.commands.RequiredType;
 import com.intellectualcrafters.plot.commands.SubCommand;
 import com.intellectualcrafters.plot.config.C;
 import com.intellectualcrafters.plot.object.Plot;
@@ -25,13 +27,18 @@ import com.intellectualcrafters.plot.util.MainUtil;
 import com.intellectualcrafters.plot.util.Permissions;
 import com.intellectualcrafters.plot.util.SchematicHandler;
 import com.intellectualcrafters.plot.util.TaskManager;
-import com.intellectualcrafters.plot.util.bukkit.UUIDHandler;
+import com.intellectualcrafters.plot.util.UUIDHandler;
+import com.plotsquared.general.commands.CommandDeclaration;
 
+@CommandDeclaration(
+        command = "web",
+        permission = "plots.web",
+ category = CommandCategory.SCHEMATIC,
+        requiredType = RequiredType.NONE,
+        description = "Web related commands",
+        usage = "/plots web"
+)
 public class Web extends SubCommand {
-
-    public Web() {
-        super("web", "plots.web", "Web related commands", "", "web", CommandCategory.DEBUG, false);
-    }
 
     public void noargs(final PlotPlayer player) {
         final ArrayList<String> args = new ArrayList<String>();
@@ -71,7 +78,7 @@ public class Web extends SubCommand {
     private final HashMap<String, Long> timestamps = new HashMap<>();
 
     @Override
-    public boolean execute(final PlotPlayer player, final String... args) {
+    public boolean onCommand(final PlotPlayer player, final String... args) {
         if (args.length == 0) {
             noargs(player);
             return false;
@@ -104,7 +111,7 @@ public class Web extends SubCommand {
                     }
                     case "world":
                     case "schematic": {
-                        plot = MainUtil.getPlot(player.getLocation());
+                        plot = player.getCurrentPlot();
                         if ((plot == null) || (!plot.isAdded(player.getUUID()) && !Permissions.hasPermission(player, "plots.web.download.other"))) {
                             MainUtil.sendMessage(player, C.NO_PLOT_PERMS);
                             return false;
@@ -191,8 +198,8 @@ public class Web extends SubCommand {
                         if (owner == null) {
                             MainUtil.sendMessage(player, "&7(invalid owner) Could not export &c" + plot.id);
                         }
-                        final String filename = plot.id.x + ";" + plot.id.y + "," + plot.world + "," + owner + ".zip";
-                        final World world = Bukkit.getWorld(plot.world);
+                        final String filename = plot.id.x + ";" + plot.id.y + "," + plot.getArea().toString() + "," + owner + ".zip";
+                        final World world = Bukkit.getWorld(plot.getArea().worldname);
                         world.save();
                         boolean result;
                         try {
@@ -223,9 +230,9 @@ public class Web extends SubCommand {
                     }
                     case "schematic": {
                         MainUtil.sendMessage(player, "&6Processing plot...");
-                        SchematicHandler.manager.getCompoundTag(plot.world, plot.id, new RunnableVal<CompoundTag>() {
+                        SchematicHandler.manager.getCompoundTag(plot, new RunnableVal<CompoundTag>() {
                             @Override
-                            public void run() {
+                            public void run(final CompoundTag value) {
                                 final String o = UUIDHandler.getName(plot.owner);
                                 final String owner = o == null ? "unknown" : o;
                                 if (value == null) {
@@ -236,7 +243,7 @@ public class Web extends SubCommand {
                                     @Override
                                     public void run() {
                                         MainUtil.sendMessage(player, "&6Generating link...");
-                                        final String filename = plot.id.x + ";" + plot.id.y + "," + plot.world + "," + owner + ".schematic";
+                                        final String filename = plot.id.x + ";" + plot.id.y + "," + plot.getArea() + "," + owner + ".schematic";
                                         final boolean result = SchematicHandler.manager.save(value, Main.plugin.getDataFolder() + File.separator + "downloads" + File.separator + filename);
                                         if (!result) {
                                             MainUtil.sendMessage(player, "&7Could not export &c" + plot.id);
@@ -264,7 +271,7 @@ public class Web extends SubCommand {
                     MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.reload");
                     return false;
                 }
-                final Plot plot = MainUtil.getPlot(player.getLocation());
+                final Plot plot = player.getCurrentPlot();
                 if ((plot == null) || !plot.isAdded(player.getUUID()) && !Permissions.hasPermission(player, "plots.web.download.other")) {
                     MainUtil.sendMessage(player, C.NO_PLOT_PERMS);
                     return true;

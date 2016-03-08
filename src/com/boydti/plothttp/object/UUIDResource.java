@@ -5,7 +5,7 @@ import java.util.UUID;
 import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
 import com.intellectualcrafters.json.JSONArray;
 import com.intellectualcrafters.json.JSONObject;
-import com.intellectualcrafters.plot.util.bukkit.UUIDHandler;
+import com.intellectualcrafters.plot.util.UUIDHandler;
 
 public class UUIDResource extends Resource {
 

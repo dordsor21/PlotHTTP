@@ -1,8 +1,6 @@
 package com.boydti.plothttp.object;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.UUID;
 
@@ -12,10 +10,9 @@ import com.intellectualcrafters.json.JSONObject;
 import com.intellectualcrafters.plot.PS;
 import com.intellectualcrafters.plot.object.BlockLoc;
 import com.intellectualcrafters.plot.object.Plot;
+import com.intellectualcrafters.plot.object.PlotCluster;
 import com.intellectualcrafters.plot.object.PlotId;
-import com.intellectualcrafters.plot.util.ClusterManager;
-import com.intellectualcrafters.plot.util.MainUtil;
-import com.intellectualcrafters.plot.util.bukkit.UUIDHandler;
+import com.intellectualcrafters.plot.util.UUIDHandler;
 
 public class PlotResource extends Resource {
 
@@ -30,42 +27,47 @@ public class PlotResource extends Resource {
     @Override
     public byte[] getResult(final Request request, final IHTTPSession session) {
         final String world = request.ARGS.get("world");
-
+        final String area = request.ARGS.get("area");
+        final String baseString = request.ARGS.get("base");
+        final boolean base = baseString == null ? false : Boolean.parseBoolean(baseString);
         PlotId id = null;
         final String idStr = request.ARGS.get("id");
         if (idStr != null) {
             id = PlotId.fromString(idStr);
         }
+        Collection<Plot> plots = PS.get().getPlots();
+        
 
-        Collection<Plot> plots;
-        if (world != null) {
-            if (id != null) {
-                plots = new HashSet<Plot>();
-                final Plot plot = MainUtil.getPlot(world, id);
-                if (plot != null) {
-                    plots.add(plot);
+        if (id != null) {
+            final Iterator<Plot> i = plots.iterator();
+            while (i.hasNext()) {
+                final Plot plot = i.next();
+                if (!plot.id.equals(id)) {
+                    i.remove();
                 }
-            } else {
-                plots = PS.get().getPlots(world).values();
-            }
-        } else {
-            if (id != null) {
-                plots = new HashSet<Plot>();
-                for (final HashMap<PlotId, Plot> entry : PS.get().getAllPlotsRaw().values()) {
-                    final Plot plot = entry.get(id);
-                    if (plot != null) {
-                        plots.add(plot);
-                    }
-                }
-            } else {
-                plots = PS.get().getPlots();
             }
         }
-
+        if (area != null) {
+            final Iterator<Plot> i = plots.iterator();
+            while (i.hasNext()) {
+                final Plot plot = i.next();
+                if (!plot.getArea().toString().equals(area)) {
+                    i.remove();
+                }
+            }
+        }
+        if (world != null) {
+            final Iterator<Plot> i = plots.iterator();
+            while (i.hasNext()) {
+                final Plot plot = i.next();
+                if (!plot.getArea().worldname.equals(world)) {
+                    i.remove();
+                }
+            }
+        }
         if (plots.size() == 0) {
             return null;
         }
-
         UUID uuid = getUUID(request.ARGS.get("owner"));
         if (uuid != null) {
             final Iterator<Plot> i = plots.iterator();
@@ -76,11 +78,9 @@ public class PlotResource extends Resource {
                 }
             }
         }
-
         if (plots.size() == 0) {
             return null;
         }
-
         uuid = getUUID(request.ARGS.get("members"));
         if (uuid != null) {
             final Iterator<Plot> i = plots.iterator();
@@ -91,11 +91,9 @@ public class PlotResource extends Resource {
                 }
             }
         }
-
         if (plots.size() == 0) {
             return null;
         }
-
         uuid = getUUID(request.ARGS.get("allowed"));
         if (uuid != null) {
             final Iterator<Plot> i = plots.iterator();
@@ -106,11 +104,9 @@ public class PlotResource extends Resource {
                 }
             }
         }
-
         if (plots.size() == 0) {
             return null;
         }
-
         uuid = getUUID(request.ARGS.get("trusted"));
         if (uuid != null) {
             final Iterator<Plot> i = plots.iterator();
@@ -121,11 +117,9 @@ public class PlotResource extends Resource {
                 }
             }
         }
-
         if (plots.size() == 0) {
             return null;
         }
-
         uuid = getUUID(request.ARGS.get("denied"));
         if (uuid != null) {
             final Iterator<Plot> i = plots.iterator();
@@ -136,26 +130,23 @@ public class PlotResource extends Resource {
                 }
             }
         }
-
         if (plots.size() == 0) {
             return null;
         }
-
         final String clusterName = request.ARGS.get("cluster");
         if (clusterName != null) {
             final Iterator<Plot> i = plots.iterator();
             while (i.hasNext()) {
                 final Plot plot = i.next();
-                if (!ClusterManager.getCluster(plot).getName().equals(clusterName)) {
+                PlotCluster cluster = plot.getCluster();
+                if (cluster == null || !cluster.getName().equals(clusterName)) {
                     i.remove();
                 }
             }
         }
-
         if (plots.size() == 0) {
             return null;
         }
-
         final String alias = request.ARGS.get("alias");
         if (alias != null) {
             final Iterator<Plot> i = plots.iterator();
@@ -166,11 +157,9 @@ public class PlotResource extends Resource {
                 }
             }
         }
-
         if (plots.size() == 0) {
             return null;
         }
-
         final String mergedStr = request.ARGS.get("merged");
         if (alias != null) {
             final Iterator<Plot> i = plots.iterator();
@@ -190,16 +179,13 @@ public class PlotResource extends Resource {
                 }
             }
         }
-
         if (plots.size() == 0) {
             return null;
         }
-
         final JSONArray plotsObj = new JSONArray();
         for (final Plot plot : plots) {
             plotsObj.put(serializePlot(plot));
         }
-
         return plotsObj.toString(1).getBytes();
     }
 
@@ -211,7 +197,8 @@ public class PlotResource extends Resource {
         id.put("y", plot.id.y);
         obj.put("id", id);
 
-        obj.put("world", plot.world);
+        obj.put("area", plot.getArea().toString());
+        obj.put("world", plot.getArea().worldname);
         obj.put("ownerUUID", plot.owner);
         obj.put("ownerName", plot.owner == null ? "" : UUIDHandler.getName(plot.owner));
         

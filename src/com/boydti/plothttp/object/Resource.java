@@ -6,7 +6,7 @@ import java.util.UUID;
 import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
 import com.boydti.plothttp.util.NanoHTTPD.Response;
 import com.intellectualcrafters.json.JSONArray;
-import com.intellectualcrafters.plot.util.bukkit.UUIDHandler;
+import com.intellectualcrafters.plot.util.UUIDHandler;
 
 public abstract class Resource {
 
@@ -38,7 +38,7 @@ public abstract class Resource {
         if (name == null) {
             return null;
         }
-        final UUID uuid = UUIDHandler.getUUID(name);
+        final UUID uuid = UUIDHandler.getUUID(name, null);
         if (uuid != null) {
             return uuid;
         }

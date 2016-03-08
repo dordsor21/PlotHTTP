@@ -3,27 +3,24 @@ package com.boydti.plothttp.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.bukkit.Bukkit;
 
 import com.boydti.plothttp.Main;
+import com.google.common.io.ByteSink;
+import com.google.common.io.InputSupplier;
 import com.intellectualcrafters.plot.object.Location;
 import com.intellectualcrafters.plot.object.Plot;
-import com.intellectualcrafters.plot.util.MainUtil;
+import com.plotsquared.bukkit.util.NbtFactory;
+import com.plotsquared.bukkit.util.NbtFactory.NbtCompound;
+import com.plotsquared.bukkit.util.NbtFactory.StreamOptions;
 
 public class WorldUtil {
     public static boolean save(final Plot plot, final String filename) throws Exception {
-        final Location bot = MainUtil.getPlotBottomLoc(plot.world, plot.id).add(1, 0, 1);
-        final Location top = MainUtil.getPlotTopLoc(plot.world, plot.id);
-
-        final int brx = bot.getX() >> 9;
-        final int brz = bot.getZ() >> 9;
-
-        final int trx = top.getX() >> 9;
-        final int trz = top.getZ() >> 9;
-
         final byte[] buffer = new byte[1024];
 
         final String output = Main.plugin.getDataFolder() + File.separator + "downloads" + File.separator + filename;
@@ -32,44 +29,87 @@ public class WorldUtil {
             System.out.print(outputFile.getParentFile().mkdirs());
             System.out.print(outputFile.createNewFile());
         }
+        
+        // TODO FIXME calculate offset
+
         final FileOutputStream fos = new FileOutputStream(outputFile);
         final ZipOutputStream zos = new ZipOutputStream(fos);
 
-        final File dat = getDat(plot.world);
+        final File dat = getDat(plot.getArea().worldname);
         if (dat != null) {
             final ZipEntry ze = new ZipEntry("world" + File.separator + dat.getName());
             zos.putNextEntry(ze);
             final FileInputStream in = new FileInputStream(dat);
-            int len;
-            while ((len = in.read(buffer)) > 0) {
-                zos.write(buffer, 0, len);
-            }
+            
+            final InputSupplier<FileInputStream> is = com.google.common.io.Files.newInputStreamSupplier(dat);
+            final NbtFactory.NbtCompound compound = NbtFactory.fromStream(is, NbtFactory.StreamOptions.GZIP_COMPRESSION);
+
+            Location spawn = plot.getHome();
+            NbtCompound data = compound.getMap("Data", false);
+            System.out.println("DATA: " + data);
+            data.put("SpawnX", spawn.getX());
+            data.put("SpawnY", spawn.getY());
+            data.put("SpawnZ", spawn.getZ());
+            
+            final OutputStream osWrapper = new OutputStream() {
+                @Override
+                public void write(int paramInt) throws IOException {
+                    zos.write(paramInt);
+                }
+                @Override
+                public void close() throws IOException {
+                    zos.closeEntry();
+                    super.close();
+                }
+                @Override
+                public void flush() throws IOException {
+                    zos.flush();
+                }
+            };
+            ByteSink sink = new ByteSink() {
+                @Override
+                public OutputStream openStream() throws IOException {
+                    return osWrapper;
+                }
+            };
+            compound.saveTo(sink, StreamOptions.GZIP_COMPRESSION);
+            //            int len;
+            //            while ((len = in.read(buffer)) > 0) {
+            //                zos.write(buffer, 0, len);
+            //            }
             in.close();
-            zos.closeEntry();
         } else {
             System.out.print("NO DAT FOUND");
         }
+        
 
-        final int cx = brx;
-        final int cz = brz;
-
-        for (int x = brx; x <= trx; x++) {
-            for (int z = brz; z <= trz; z++) {
-                final File file = getMcr(plot.world, x, z);
-                if (file != null) {
-                    final String name = "r." + (x - cx) + "." + (z - cz) + ".mca";
-                    final ZipEntry ze = new ZipEntry("world" + File.separator + "region" + File.separator + name);
-                    zos.putNextEntry(ze);
-                    final FileInputStream in = new FileInputStream(file);
-                    int len;
-                    while ((len = in.read(buffer)) > 0) {
-                        zos.write(buffer, 0, len);
+        for (Plot current : plot.getConnectedPlots()) {
+            final Location bot = current.getBottomAbs();
+            final Location top = current.getTopAbs();
+            final int brx = bot.getX() >> 9;
+            final int brz = bot.getZ() >> 9;
+            final int trx = top.getX() >> 9;
+            final int trz = top.getZ() >> 9;
+            for (int x = brx; x <= trx; x++) {
+                for (int z = brz; z <= trz; z++) {
+                    final File file = getMcr(plot.getArea().worldname, x, z);
+                    if (file != null) {
+                        //final String name = "r." + (x - cx) + "." + (z - cz) + ".mca";
+                        String name = file.getName();
+                        final ZipEntry ze = new ZipEntry("world" + File.separator + "region" + File.separator + name);
+                        zos.putNextEntry(ze);
+                        final FileInputStream in = new FileInputStream(file);
+                        int len;
+                        while ((len = in.read(buffer)) > 0) {
+                            zos.write(buffer, 0, len);
+                        }
+                        in.close();
+                        zos.closeEntry();
                     }
-                    in.close();
-                    zos.closeEntry();
                 }
             }
         }
+
         //remember close it
         zos.close();
         System.out.println("Done");

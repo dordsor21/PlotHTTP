@@ -109,7 +109,7 @@ public class Main extends JavaPlugin {
             return;
         }
         this.commands = true;
-        MainCommand.subCommands.add(new Web());
+        MainCommand.getInstance().addCommand(new Web());
     }
 
     public void setupResources() {
