@@ -30,8 +30,6 @@ public class PlotFileManager implements TempFileManagerFactory {
 
             @Override
             public void clear() {
-                if (!PlotFileManager.this.tempFiles.isEmpty()) {
-                }
                 for (final TempFile file : PlotFileManager.this.tempFiles) {
                     try {
                         file.delete();

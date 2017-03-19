@@ -1,34 +1,34 @@
 package com.boydti.plothttp.command;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.configuration.file.YamlConfiguration;
-
 import com.boydti.plothttp.Main;
 import com.boydti.plothttp.object.Request;
 import com.boydti.plothttp.object.WebResource;
-import com.boydti.plothttp.util.RequestManager;
 import com.boydti.plothttp.util.WorldUtil;
+import com.intellectualcrafters.configuration.file.YamlConfiguration;
 import com.intellectualcrafters.jnbt.CompoundTag;
+import com.intellectualcrafters.plot.PS;
 import com.intellectualcrafters.plot.commands.CommandCategory;
 import com.intellectualcrafters.plot.commands.RequiredType;
 import com.intellectualcrafters.plot.commands.SubCommand;
 import com.intellectualcrafters.plot.config.C;
 import com.intellectualcrafters.plot.object.Plot;
+import com.intellectualcrafters.plot.object.PlotArea;
 import com.intellectualcrafters.plot.object.PlotPlayer;
 import com.intellectualcrafters.plot.object.RunnableVal;
+import com.intellectualcrafters.plot.object.worlds.SinglePlotArea;
 import com.intellectualcrafters.plot.util.MainUtil;
 import com.intellectualcrafters.plot.util.Permissions;
 import com.intellectualcrafters.plot.util.SchematicHandler;
 import com.intellectualcrafters.plot.util.TaskManager;
 import com.intellectualcrafters.plot.util.UUIDHandler;
 import com.plotsquared.general.commands.CommandDeclaration;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 
 @CommandDeclaration(
         command = "web",
@@ -45,14 +45,14 @@ public class Web extends SubCommand {
         if (Permissions.hasPermission(player, "plots.web.reload")) {
             args.add("reload");
         }
-        if (Permissions.hasPermission(player, "plots.web.download")) {
-            args.add("download");
-        }
-        if (Permissions.hasPermission(player, "plots.web.upload")) {
-            args.add("upload");
-        }
+//        if (Permissions.hasPermission(player, "plots.web.download")) {
+//            args.add("download");
+//        }
+//        if (Permissions.hasPermission(player, "plots.web.upload")) {
+//            args.add("upload");
+//        }
         if (args.size() == 0) {
-            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.<reload|download|upload>");
+            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.reload");
             return;
         }
         MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot web <" + StringUtils.join(args, "|") + ">");
@@ -89,8 +89,8 @@ public class Web extends SubCommand {
                     MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.reload");
                     return false;
                 }
-                Main.plugin.onDisable();
-                Main.plugin.onEnable();
+                Main.imp().onDisable();
+                Main.imp().onEnable();
                 MainUtil.sendMessage(player, "&aReloaded success!");
                 return true;
             }
@@ -100,7 +100,7 @@ public class Web extends SubCommand {
                     return false;
                 }
                 if (args.length < 2) {
-                    MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot download <schematic|world|worldedit>");
+                    MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot web download <schematic|world|worldedit>");
                     return false;
                 }
                 final Plot plot;
@@ -119,7 +119,7 @@ public class Web extends SubCommand {
                         break;
                     }
                     default: {
-                        MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot download <schematic|world|worldedit>");
+                        MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot web download <schematic|world|worldedit>");
                         return false;
                     }
                 }
@@ -135,8 +135,8 @@ public class Web extends SubCommand {
                 }
                 final String id = WebResource.nextId();
                 final String port;
-                if (Main.port != 80) {
-                    port = ":" + Main.port;
+                if (Main.config().PORT != 80) {
+                    port = ":" + Main.config().PORT;
                 } else {
                     port = "";
                 }
@@ -147,6 +147,10 @@ public class Web extends SubCommand {
                 MainUtil.sendMessage(player, "&6Please wait while we process your plot...");
                 switch (args[1].toLowerCase()) {
                     case "worldedit": {
+                        if (!Permissions.hasPermission(player, "plots.web.download.worldedit")) {
+                            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.download.worldedit");
+                            return false;
+                        }
                         final File worldeditDir = new File("plugins" + File.separator + "WorldEdit");
                         final File worldeditFile = new File(worldeditDir + File.separator + "config.yml");
                         if (!worldeditFile.exists()) {
@@ -183,23 +187,28 @@ public class Web extends SubCommand {
                             public void run() {
                                 MainUtil.sendMessage(player, "&6Generating link...");
                                 WebResource.downloads.put(id, schem.getAbsolutePath());
-                                MainUtil.sendMessage(player, "Download the file: " + Main.ip + port + "/web?id=" + id);
+                                MainUtil.sendMessage(player, "Download the file: " + Main.config().WEB_IP + port + "/web?id=" + id);
                                 final HashMap<String, String> map = new HashMap<>();
                                 map.put("id", id);
-                                final Request r = new Request("*", "GET", "/web", map, 1);
-                                RequestManager.addToken(r);
+                                final Request r = new Request("*", "GET", "/web", map, 2);
+                                Main.imp().getWebServer().getRequestManager().addToken(r);
                             }
                         });
                         this.timestamps.put(player.getName(), System.currentTimeMillis());
                         return true;
                     }
                     case "world": {
+                        if (!Permissions.hasPermission(player, "plots.web.download.world")) {
+                            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.download.world");
+                            return false;
+                        }
                         final String owner = UUIDHandler.getName(plot.owner);
                         if (owner == null) {
-                            MainUtil.sendMessage(player, "&7(invalid owner) Could not export &c" + plot.id);
+                            MainUtil.sendMessage(player, "&7(invalid owner) Could not export &c" + plot.getId());
                         }
-                        final String filename = plot.id.x + ";" + plot.id.y + "," + plot.getArea().toString() + "," + owner + ".zip";
-                        final World world = Bukkit.getWorld(plot.getArea().worldname);
+                        String worldName = (plot.getArea() instanceof SinglePlotArea) ? plot.getId().toString().replace(';', ',') : plot.getArea().worldname;
+                        final String filename = plot.getId().x + "," + plot.getId().y + "," + worldName + "," + owner + ".zip";
+                        final World world = Bukkit.getWorld(worldName);
                         world.save();
                         boolean result;
                         try {
@@ -214,21 +223,25 @@ public class Web extends SubCommand {
                             TaskManager.runTaskLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    MainUtil.sendMessage(player, "Download the file: " + Main.ip + port + "/web?id=" + id);
+                                    MainUtil.sendMessage(player, "Download the file: " + Main.config().WEB_IP + port + "/web?id=" + id);
                                     final HashMap<String, String> map = new HashMap<>();
                                     map.put("id", id);
-                                    final Request r = new Request("*", "GET", "/web", map, 1);
-                                    RequestManager.addToken(r);
+                                    final Request r = new Request("*", "GET", "/web", map, 2);
+                                    Main.imp().getWebServer().getRequestManager().addToken(r);
                                 }
                             }, 200);
                             this.timestamps.put(player.getName(), System.currentTimeMillis());
                             return true;
                         } else {
-                            MainUtil.sendMessage(player, "&7Could not export &c" + plot.id);
+                            MainUtil.sendMessage(player, "&7Could not export &c" + plot.getId());
                             return false;
                         }
                     }
                     case "schematic": {
+                        if (!Permissions.hasPermission(player, "plots.web.download.schematic")) {
+                            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.download.schematic");
+                            return false;
+                        }
                         MainUtil.sendMessage(player, "&6Processing plot...");
                         SchematicHandler.manager.getCompoundTag(plot, new RunnableVal<CompoundTag>() {
                             @Override
@@ -236,25 +249,25 @@ public class Web extends SubCommand {
                                 final String o = UUIDHandler.getName(plot.owner);
                                 final String owner = o == null ? "unknown" : o;
                                 if (value == null) {
-                                    MainUtil.sendMessage(player, "&7Could not export &c" + plot.id);
+                                    MainUtil.sendMessage(player, "&7Could not export &c" + plot.getId());
                                     return;
                                 }
                                 TaskManager.runTaskAsync(new Runnable() {
                                     @Override
                                     public void run() {
                                         MainUtil.sendMessage(player, "&6Generating link...");
-                                        final String filename = plot.id.x + ";" + plot.id.y + "," + plot.getArea() + "," + owner + ".schematic";
-                                        final boolean result = SchematicHandler.manager.save(value, Main.plugin.getDataFolder() + File.separator + "downloads" + File.separator + filename);
+                                        final String filename = plot.getId().x + ";" + plot.getId().y + "," + plot.getArea() + "," + owner + ".schematic";
+                                        final boolean result = SchematicHandler.manager.save(value, Main.imp().getDataFolder() + File.separator + "downloads" + File.separator + filename);
                                         if (!result) {
-                                            MainUtil.sendMessage(player, "&7Could not export &c" + plot.id);
+                                            MainUtil.sendMessage(player, "&7Could not export &c" + plot.getId());
                                         } else {
-                                            MainUtil.sendMessage(null, "&7 - &a  success: " + plot.id);
+                                            MainUtil.sendMessage(null, "&7 - &a  success: " + plot.getId());
                                             WebResource.downloads.put(id, filename);
-                                            MainUtil.sendMessage(player, "Download the file: " + Main.ip + port + "/web?id=" + id);
+                                            MainUtil.sendMessage(player, "Download the file: " + Main.config().WEB_IP + port + "/web?id=" + id);
                                             final HashMap<String, String> map = new HashMap<>();
                                             map.put("id", id);
-                                            final Request r = new Request("*", "GET", "/web", map, 1);
-                                            RequestManager.addToken(r);
+                                            final Request r = new Request("*", "GET", "/web", map, 2);
+                                            Main.imp().getWebServer().getRequestManager().addToken(r);
                                         }
                                     }
                                 });
@@ -268,29 +281,67 @@ public class Web extends SubCommand {
             }
             case "upload": {
                 if (!Permissions.hasPermission(player, "plots.web.upload")) {
-                    MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.reload");
+                    MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.upload");
                     return false;
                 }
-                final Plot plot = player.getCurrentPlot();
-                if ((plot == null) || !plot.isAdded(player.getUUID()) && !Permissions.hasPermission(player, "plots.web.download.other")) {
-                    MainUtil.sendMessage(player, C.NO_PLOT_PERMS);
-                    return true;
+                if (args.length < 2) {
+                    MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot web upload <schematic|world>");
+                    return false;
                 }
-                MainUtil.sendMessage(player, "&6Generating link...");
-                final String id = WebResource.nextId();
-                final String port;
-                if (Main.port != 80) {
-                    port = ":" + Main.port;
-                } else {
-                    port = "";
+                switch (args[1].toLowerCase()) {
+                    case "schematic": {
+                        if (!Permissions.hasPermission(player, "plots.web.upload.schematic")) {
+                            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.upload.schematic");
+                            return false;
+                        }
+                        final Plot plot = player.getCurrentPlot();
+                        if ((plot == null) || !plot.isAdded(player.getUUID()) && !Permissions.hasPermission(player, "plots.web.download.other")) {
+                            MainUtil.sendMessage(player, C.NO_PLOT_PERMS);
+                            return true;
+                        }
+                        MainUtil.sendMessage(player, "&6Generating link...");
+                        final String id = WebResource.nextId();
+                        final String port;
+                        if (Main.config().PORT != 80) {
+                            port = ":" + Main.config().PORT;
+                        } else {
+                            port = "";
+                        }
+                        WebResource.uploads.put(id, plot);
+                        MainUtil.sendMessage(player, "Upload the schematic: " + Main.config().WEB_IP + port + "/web?id=" + id);
+                        final HashMap<String, String> map = new HashMap<>();
+                        map.put("id", id);
+                        final Request r = new Request("*", "*", "/web", map, 2);
+                        Main.imp().getWebServer().getRequestManager().addToken(r);
+                        return false;
+                    }
+                    case "world": {
+                        if (!Permissions.hasPermission(player, "plots.web.upload.world")) {
+                            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.upload.world");
+                            return false;
+                        }
+                        PlotArea area = PS.get().getPlotArea("*", null);
+                        if (area == null) {
+                            MainUtil.sendMessage(player, "&6World uploads are disabled!");
+                            return false;
+                        }
+                        MainUtil.sendMessage(player, "&6Generating link...");
+                        final String id = WebResource.nextId();
+                        final String port;
+                        if (Main.config().PORT != 80) {
+                            port = ":" + Main.config().PORT;
+                        } else {
+                            port = "";
+                        }
+                        WebResource.worldUploads.put(id, player);
+                        MainUtil.sendMessage(player, "Upload the world: " + Main.config().WEB_IP + port + "/web?id=" + id);
+                        final HashMap<String, String> map = new HashMap<>();
+                        map.put("id", id);
+                        final Request r = new Request("*", "*", "/web", map, 2000);
+                        Main.imp().getWebServer().getRequestManager().addToken(r);
+                        return false;
+                    }
                 }
-                WebResource.uploads.put(id, plot);
-                MainUtil.sendMessage(player, "Upload the file: " + Main.ip + port + "/web?id=" + id);
-                final HashMap<String, String> map = new HashMap<>();
-                map.put("id", id);
-                final Request r = new Request("*", "*", "/web", map, 1);
-                RequestManager.addToken(r);
-                return false;
             }
             default: {
                 noargs(player);

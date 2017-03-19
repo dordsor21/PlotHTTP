@@ -46,3 +46,7 @@ Temporary Items
 *.project
 *.class
 /bin/
+.idea
+.gradle
+build
+target

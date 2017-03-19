@@ -3,9 +3,9 @@ package com.boydti.plothttp.util;
 import java.io.IOException;
 
 public class ServerRunner {
-    public static NanoHTTPD run(final Class serverClass) {
+    public static <T extends NanoHTTPD> T run(final Class<T> serverClass) {
         try {
-            final NanoHTTPD instance = (NanoHTTPD) serverClass.newInstance();
+            final T instance = serverClass.newInstance();
             executeInstance(instance);
             return instance;
         } catch (final Exception e) {

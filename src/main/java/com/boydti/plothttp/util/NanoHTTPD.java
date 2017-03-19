@@ -983,7 +983,7 @@ public abstract class NanoHTTPD {
                     size = 0;
                 }
 
-                if (size > Main.max_upload) {
+                if (size > Main.config().CONTENT.MAX_UPLOAD) {
                     return false;
                 }
 
@@ -1153,9 +1153,11 @@ public abstract class NanoHTTPD {
                                 disposition.put(token.substring(0, p).trim().toLowerCase(Locale.US), token.substring(p + 1).trim());
                             }
                         }
-                        String pname = disposition.get("name");
+                        String pname = disposition.get("filename");
+                        if (pname == null) {
+                            pname = disposition.get("name");
+                        }
                         pname = pname.substring(1, pname.length() - 1);
-
                         String value = "";
                         if (item.get("content-type") == null) {
                             while ((mpline != null) && !mpline.contains(boundary)) {

@@ -42,7 +42,7 @@ public class PlotResource extends Resource {
             final Iterator<Plot> i = plots.iterator();
             while (i.hasNext()) {
                 final Plot plot = i.next();
-                if (!plot.id.equals(id)) {
+                if (!plot.getId().equals(id)) {
                     i.remove();
                 }
             }
@@ -193,8 +193,8 @@ public class PlotResource extends Resource {
         final JSONObject obj = new JSONObject();
 
         final JSONObject id = new JSONObject();
-        id.put("x", plot.id.x);
-        id.put("y", plot.id.y);
+        id.put("x", plot.getId().x);
+        id.put("y", plot.getId().y);
         obj.put("id", id);
 
         obj.put("area", plot.getArea().toString());
