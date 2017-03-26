@@ -1,5 +1,6 @@
 package com.boydti.plothttp;
 
+import com.boydti.fawe.bukkit.wrapper.AsyncWorld;
 import com.boydti.plothttp.command.Upload;
 import com.boydti.plothttp.command.Web;
 import com.boydti.plothttp.object.ClusterResource;
@@ -30,16 +31,14 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
-import org.bukkit.event.EventHandler;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin implements Listener {
@@ -100,7 +99,7 @@ public class Main extends JavaPlugin implements Listener {
         setupCommands();
 
         // Setup events
-        Bukkit.getPluginManager().registerEvents(this, this);
+        Bukkit.getPluginManager().registerEvents(new MainListener(), this);
 
         Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
             @Override
@@ -130,25 +129,39 @@ public class Main extends JavaPlugin implements Listener {
         }, 20);
     }
 
-    private void unload() {
+    public World load(Plot plot) {
+        String worldName = plot.getWorldName();
+        World world = Bukkit.getWorld(worldName);
+        if (world != null) {
+            return world;
+        }
+        WorldCreator wc = new WorldCreator(worldName);
+        wc.generator("PlotSquared:single");
+        wc.environment(World.Environment.NORMAL);
+        wc.type(WorldType.FLAT);
+        return AsyncWorld.create(wc);
+    }
+
+    public void unload() {
         PlotArea area = PS.get().getPlotArea("*", null);
         long start = System.currentTimeMillis();
         if (area != null) {
-            Map<PlotId, Plot> plotsRaw = area.getPlotsRaw();
-            for (Entry<PlotId, Plot> entry : plotsRaw.entrySet()) {
-                Plot plot = entry.getValue();
-                String worldName = plot.getId().x + "," + plot.getId().y;
-                World world = Bukkit.getWorld(worldName);
-                if (world != null) {
-                    List<PlotPlayer> players = plot.getPlayersInPlot();
-                    if (players.isEmpty()) {
-                        for (Chunk chunk : world.getLoadedChunks()) {
-                            chunk.unload(true, false);
-                            if (System.currentTimeMillis() - start > 50) {
-                                break;
+            for (World world : Bukkit.getWorlds()) {
+                String name = world.getName();
+                PlotId id = PlotId.fromString(name);
+                if (id != null) {
+                    Plot plot = area.getOwnedPlot(id);
+                    if (plot != null) {
+                        List<PlotPlayer> players = plot.getPlayersInPlot();
+                        if (players.isEmpty() && PlotPlayer.wrap(plot.owner) == null) {
+                            for (Chunk chunk : world.getLoadedChunks()) {
+                                chunk.unload(true, false);
+                                if (System.currentTimeMillis() - start > 20) {
+                                    return;
+                                }
                             }
+                            Bukkit.unloadWorld(world, false);
                         }
-                        Bukkit.unloadWorld(world, false);
                     }
                 }
             }
@@ -157,11 +170,6 @@ public class Main extends JavaPlugin implements Listener {
 
     public PlotServer getWebServer() {
         return server;
-    }
-
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        unload();
     }
 
     @Override
