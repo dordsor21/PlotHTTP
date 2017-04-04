@@ -1,27 +1,33 @@
 package com.boydti.plothttp.util;
 
+import com.boydti.fawe.util.ReflectionUtils;
 import com.boydti.plothttp.Main;
-import com.google.common.io.ByteSink;
 import com.intellectualcrafters.plot.PS;
 import com.intellectualcrafters.plot.object.ChunkLoc;
 import com.intellectualcrafters.plot.object.Location;
 import com.intellectualcrafters.plot.object.Plot;
 import com.intellectualcrafters.plot.util.ChunkManager;
+import com.sk89q.jnbt.CompoundTag;
+import com.sk89q.jnbt.IntTag;
+import com.sk89q.jnbt.NBTInputStream;
+import com.sk89q.jnbt.NBTOutputStream;
+import com.sk89q.jnbt.NamedTag;
+import com.sk89q.jnbt.Tag;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.bukkit.Bukkit;
 
 public class WorldUtil {
     public static boolean save(final Plot plot, final String filename) throws Exception {
         final byte[] buffer = new byte[1024];
 
-        final String output = Main.imp().getDataFolder() + File.separator + "downloads" + File.separator + filename;
+        final String output = Main.imp().DIR + File.separator + "downloads" + File.separator + filename;
         final File outputFile = new File(output);
         if (!outputFile.exists()) {
             System.out.print(outputFile.getParentFile().mkdirs());
@@ -37,16 +43,19 @@ public class WorldUtil {
         if (dat != null) {
             final ZipEntry ze = new ZipEntry("world" + File.separator + dat.getName());
             zos.putNextEntry(ze);
-            final NbtFactory.NbtCompound compound;
+            NamedTag compound;
             try (FileInputStream is = new FileInputStream(dat)) {
-                compound = NbtFactory.fromStream(is, NbtFactory.StreamOptions.GZIP_COMPRESSION);
+                try (NBTInputStream nbtIn = new NBTInputStream(is)) {
+                    compound = nbtIn.readNamedTag();
+                }
             }
 
             Location spawn = plot.getHome();
-            NbtFactory.NbtCompound data = compound.getMap("Data", false);
-            data.put("SpawnX", spawn.getX());
-            data.put("SpawnY", spawn.getY());
-            data.put("SpawnZ", spawn.getZ());
+            CompoundTag tag = (CompoundTag) compound.getTag();
+            Map<String, Tag> map = ReflectionUtils.getMap(tag.getValue());
+            map.put("SpawnX", new IntTag(spawn.getX()));
+            map.put("SpawnY", new IntTag(spawn.getY()));
+            map.put("SpawnZ", new IntTag(spawn.getZ()));
             
             final OutputStream osWrapper = new OutputStream() {
                 @Override
@@ -63,13 +72,9 @@ public class WorldUtil {
                     zos.flush();
                 }
             };
-            ByteSink sink = new ByteSink() {
-                @Override
-                public OutputStream openStream() throws IOException {
-                    return osWrapper;
-                }
-            };
-            compound.saveTo(sink, NbtFactory.StreamOptions.GZIP_COMPRESSION);
+            try (NBTOutputStream out = new NBTOutputStream(osWrapper)){
+                out.writeNamedTag("", tag);
+            }
         } else {
             PS.debug("NO DAT FOUND");
         }
@@ -108,7 +113,7 @@ public class WorldUtil {
     }
 
     public static File getDat(final String world) {
-        final File file = new File(Main.imp().getDataFolder() + File.separator + "level.dat");
+        final File file = new File(Main.imp().DIR + File.separator + "level.dat");
         if (file.exists()) {
             return file;
         }
@@ -116,7 +121,7 @@ public class WorldUtil {
     }
 
     public static File getMcr(final String world, final int x, final int z) {
-        final File file = new File(Bukkit.getWorldContainer(), world + File.separator + "region" + File.separator + "r." + x + "." + z + ".mca");
+        final File file = new File(PS.imp().getWorldContainer(), world + File.separator + "region" + File.separator + "r." + x + "." + z + ".mca");
         if (file.exists()) {
             return file;
         }

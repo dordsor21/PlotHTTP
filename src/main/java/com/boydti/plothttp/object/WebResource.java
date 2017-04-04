@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.bukkit.Bukkit;
 
 public class WebResource extends Resource {
 
@@ -82,7 +81,7 @@ public class WebResource extends Resource {
                     isDownload = true;
                     WebResource.filename = file.getName();
                 } else {
-                    file = new File(Main.imp().getDataFolder() + File.separator + "downloads" + File.separator + download);
+                    file = new File(Main.imp().DIR + File.separator + "downloads" + File.separator + download);
                     if (!file.exists()) {
                         return null;
                     }
@@ -112,7 +111,7 @@ public class WebResource extends Resource {
                         uploads.remove(id);
                         Main.imp().getWebServer().getRequestManager().removeToken(request);
                         final String filename = upload.getId().x + ";" + upload.getId().y + "," + upload.getArea() + ".schematic";
-                        final String directory = Main.imp().getDataFolder() + File.separator + "uploads" + File.separator + filename;
+                        final String directory = Main.imp().DIR + File.separator + "uploads" + File.separator + filename;
 
                         try {
                             final Map<String, String> files = new HashMap<String, String>();
@@ -204,7 +203,7 @@ public class WebResource extends Resource {
                                         final Map<String, String> files = new HashMap<String, String>();
                                         session.parseBody(files);
                                         PlotId pid = plot.getId();
-                                        File directory = new File(Bukkit.getWorldContainer(), pid.x + "," + pid.y + File.separator + "region");
+                                        File directory = new File(PS.imp().getWorldContainer(), pid.x + "," + pid.y + File.separator + "region");
                                         if (!directory.exists()) {
                                             directory.mkdirs();
                                         }

@@ -1,6 +1,7 @@
 package com.boydti.plothttp;
 
-import com.boydti.fawe.bukkit.wrapper.AsyncWorld;
+import com.boydti.fawe.util.MainUtil;
+import com.boydti.fawe.util.TaskManager;
 import com.boydti.plothttp.command.Upload;
 import com.boydti.plothttp.command.Web;
 import com.boydti.plothttp.object.ClusterResource;
@@ -15,37 +16,20 @@ import com.boydti.plothttp.util.RequestManager;
 import com.boydti.plothttp.util.ResourceManager;
 import com.boydti.plothttp.util.ServerRunner;
 import com.boydti.plothttp.util.WebUtil;
-import com.intellectualcrafters.plot.PS;
 import com.intellectualcrafters.plot.commands.MainCommand;
-import com.intellectualcrafters.plot.object.Plot;
-import com.intellectualcrafters.plot.object.PlotArea;
-import com.intellectualcrafters.plot.object.PlotId;
-import com.intellectualcrafters.plot.object.PlotPlayer;
-import com.intellectualcrafters.plot.util.TaskManager;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.WorldType;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.java.JavaPlugin;
 
-public class Main extends JavaPlugin implements Listener {
+public class Main {
 
     private static Main IMP;
 
-    public File FILE = null;
+    public final File DIR;
+    public final File FILE;
 
     private PlotServer server;
     private WebSettings settings;
@@ -74,17 +58,17 @@ public class Main extends JavaPlugin implements Listener {
         return IMP.settings;
     }
 
-    @Override
-    public void onEnable() {
+    public Main() throws URISyntaxException {
         IMP = this;
-        try {
-            FILE = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-        } catch (final URISyntaxException e) {
-            e.printStackTrace();
-        }
+        FILE = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+        DIR = new File(FILE.getParentFile(), "PlotHTTP");
+    }
+
+    public void open() {
+        System.out.println("Dir " + DIR);
 
         // Clear downloads on load
-        deleteFolder(new File(getDataFolder() + File.separator + "downloads"));
+        deleteFolder(new File(DIR + File.separator + "downloads"));
 
         // Setting up configuration
         setupConfig();
@@ -98,10 +82,7 @@ public class Main extends JavaPlugin implements Listener {
         // Setup commands
         setupCommands();
 
-        // Setup events
-        Bukkit.getPluginManager().registerEvents(new MainListener(), this);
-
-        Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
+        TaskManager.IMP.async(new Runnable() {
             @Override
             public void run() {
                 server = ServerRunner.run(PlotServer.class);
@@ -119,61 +100,14 @@ public class Main extends JavaPlugin implements Listener {
                 }
             }
         });
-        saveResource("level.dat", false);
-
-        TaskManager.IMP.taskRepeat(new Runnable() {
-            @Override
-            public void run() {
-                unload();
-            }
-        }, 20);
-    }
-
-    public World load(Plot plot) {
-        String worldName = plot.getWorldName();
-        World world = Bukkit.getWorld(worldName);
-        if (world != null) {
-            return world;
-        }
-        WorldCreator wc = new WorldCreator(worldName);
-        wc.generator("PlotSquared:single");
-        wc.environment(World.Environment.NORMAL);
-        wc.type(WorldType.FLAT);
-        return AsyncWorld.create(wc);
-    }
-
-    public void unload() {
-        PlotArea area = PS.get().getPlotArea("*", null);
-        long start = System.currentTimeMillis();
-        if (area != null) {
-            for (World world : Bukkit.getWorlds()) {
-                String name = world.getName();
-                PlotId id = PlotId.fromString(name);
-                if (id != null) {
-                    Plot plot = area.getOwnedPlot(id);
-                    if (plot != null) {
-                        List<PlotPlayer> players = plot.getPlayersInPlot();
-                        if (players.isEmpty() && PlotPlayer.wrap(plot.owner) == null) {
-                            for (Chunk chunk : world.getLoadedChunks()) {
-                                chunk.unload(true, false);
-                                if (System.currentTimeMillis() - start > 20) {
-                                    return;
-                                }
-                            }
-                            Bukkit.unloadWorld(world, false);
-                        }
-                    }
-                }
-            }
-        }
+        MainUtil.copyFile(FILE, "level.dat", DIR);
     }
 
     public PlotServer getWebServer() {
         return server;
     }
 
-    @Override
-    public void onDisable() {
+    public void close() {
         getWebServer().getRequestManager().clear();
         server.stop();
     }
@@ -198,51 +132,14 @@ public class Main extends JavaPlugin implements Listener {
         ResourceManager.addResource(new PlotResource());
     }
 
-    public void copyFile(final String file) {
-        try {
-            final byte[] buffer = new byte[2048];
-            final File output = getDataFolder();
-            if (!output.exists()) {
-                output.mkdirs();
-            }
-            final File newFile = new File((output + File.separator + file));
-            if (newFile.exists()) {
-                return;
-            }
-            final ZipInputStream zis = new ZipInputStream(new FileInputStream(FILE));
-            ZipEntry ze = zis.getNextEntry();
-            while (ze != null) {
-                final String name = ze.getName();
-                if (name.equals(file)) {
-                    new File(newFile.getParent()).mkdirs();
-                    final FileOutputStream fos = new FileOutputStream(newFile);
-                    int len;
-                    while ((len = zis.read(buffer)) > 0) {
-                        fos.write(buffer, 0, len);
-                    }
-                    fos.close();
-                    ze = null;
-                } else {
-                    ze = zis.getNextEntry();
-                }
-            }
-            zis.closeEntry();
-            zis.close();
-        } catch (final Exception e) {
-            e.printStackTrace();
-            PS.debug("Could not save " + file);
-        }
-    }
-
     public void setupWeb() {
-        // Copy over template files
-        copyFile("views/index.html");
-        copyFile("views/upload.html");
-        copyFile("views/uploadworld.html");
-        copyFile("views/download.html");
+        MainUtil.copyFile(FILE, "views/index.html", DIR);
+        MainUtil.copyFile(FILE, "views/upload.html", DIR);
+        MainUtil.copyFile(FILE, "views/uploadworld.html", DIR);
+        MainUtil.copyFile(FILE, "views/download.html", DIR);
 
         // Loading web files
-        final File directory = new File(getDataFolder() + File.separator + "views");
+        final File directory = new File(DIR + File.separator + "views");
         final File[] files = directory.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(final File dir, final String name) {
@@ -259,10 +156,10 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     public void setupConfig() {
-        File config = new File(getDataFolder(), "settings.yml");
+        File config = new File(DIR, "settings.yml");
         settings = new WebSettings();
         settings.load(config);
-        settings.VERSION = getDescription().getVersion();
+        settings.VERSION = "development";
         settings.save(config);
     }
 }

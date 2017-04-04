@@ -1,5 +1,5 @@
 name: PlotHTTP
-main: com.boydti.plothttp.Main
+main: com.boydti.plothttp.BukkitMain
 version: 3.4.0
 load: STARTUP
 softdepend: [PlotSquared]

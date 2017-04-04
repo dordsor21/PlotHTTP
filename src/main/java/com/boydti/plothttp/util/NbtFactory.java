@@ -16,7 +16,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -34,9 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.Server;
-import org.bukkit.inventory.ItemStack;
 
 public class NbtFactory {
 
@@ -157,7 +154,7 @@ public class NbtFactory {
     /**
      * Load the content of a file from a stream.
      *
-     * @param stream - the stream supplier.
+     * @param input - the stream supplier.
      * @param option - whether or not to decompress the input stream.
      * @return The decoded NBT compound.
      * @throws IOException If anything went wrong.
@@ -222,80 +219,6 @@ public class NbtFactory {
      */
     public static NbtCompound fromCompound(Object nmsCompound) {
         return get().new NbtCompound(nmsCompound);
-    }
-
-    /**
-     * Set the NBT compound tag of a given item stack.
-     * <p>
-     * @param stack - the item stack, cannot be air.
-     * @param compound - the new NBT compound, or NULL to remove it.
-     * @throws IllegalArgumentException If the stack is not a CraftItemStack, or it represents air.
-     */
-    public static void setItemTag(ItemStack stack, NbtCompound compound) {
-        checkItemStack(stack);
-        Object nms = getFieldValue(get().CRAFT_HANDLE, stack);
-
-        // Now update the tag compound
-        setFieldValue(get().STACK_TAG, nms, compound.getHandle());
-    }
-
-    /**
-     * Construct a wrapper for an NBT tag stored (in memory) in an item stack. This is where
-     * auxiliary data such as enchanting, name and lore is stored. It does not include items
-     * material, damage value or count.
-     * <p>
-     * The item stack must be a wrapper for a CraftItemStack.
-     * @param stack - the item stack.
-     * @return A wrapper for its NBT tag.
-     */
-    public static NbtCompound fromItemTag(ItemStack stack) {
-        checkItemStack(stack);
-        Object nms = getFieldValue(get().CRAFT_HANDLE, stack);
-        Object tag = getFieldValue(get().STACK_TAG, nms);
-
-        // Create the tag if it doesn't exist
-        if (tag == null) {
-            NbtCompound compound = createCompound();
-            setItemTag(stack, compound);
-            return compound;
-        }
-        return fromCompound(tag);
-    }
-
-    /**
-     * Retrieve a CraftItemStack version of the stack.
-     * @param stack - the stack to convert.
-     * @return The CraftItemStack version.
-     */
-    public static ItemStack getCraftItemStack(ItemStack stack) {
-        // Any need to convert?
-        if ((stack == null) || get().CRAFT_STACK.isAssignableFrom(stack.getClass())) {
-            return stack;
-        }
-        try {
-            // Call the private constructor
-            Constructor<?> caller = INSTANCE.CRAFT_STACK.getDeclaredConstructor(ItemStack.class);
-            caller.setAccessible(true);
-            return (ItemStack) caller.newInstance(stack);
-        } catch (Exception ignored) {
-            throw new IllegalStateException("Unable to convert " + stack + " + to a CraftItemStack.");
-        }
-    }
-
-    /**
-     * Ensure that the given stack can store arbitrary NBT information.
-     * @param stack - the stack to check.
-     */
-    private static void checkItemStack(ItemStack stack) {
-        if (stack == null) {
-            throw new IllegalArgumentException("Stack cannot be NULL.");
-        }
-        if (!get().CRAFT_STACK.isAssignableFrom(stack.getClass())) {
-            throw new IllegalArgumentException("Stack must be a CraftItemStack.");
-        }
-        if (stack.getType() == Material.AIR) {
-            throw new IllegalArgumentException("ItemStacks representing air cannot store NMS information.");
-        }
     }
 
     /**

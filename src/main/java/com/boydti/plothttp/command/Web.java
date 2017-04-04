@@ -19,6 +19,7 @@ import com.intellectualcrafters.plot.object.worlds.SinglePlotArea;
 import com.intellectualcrafters.plot.util.MainUtil;
 import com.intellectualcrafters.plot.util.Permissions;
 import com.intellectualcrafters.plot.util.SchematicHandler;
+import com.intellectualcrafters.plot.util.StringMan;
 import com.intellectualcrafters.plot.util.TaskManager;
 import com.intellectualcrafters.plot.util.UUIDHandler;
 import com.plotsquared.general.commands.CommandDeclaration;
@@ -26,9 +27,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
 
 @CommandDeclaration(
         command = "web",
@@ -45,17 +43,17 @@ public class Web extends SubCommand {
         if (Permissions.hasPermission(player, "plots.web.reload")) {
             args.add("reload");
         }
-//        if (Permissions.hasPermission(player, "plots.web.download")) {
-//            args.add("download");
-//        }
-//        if (Permissions.hasPermission(player, "plots.web.upload")) {
-//            args.add("upload");
-//        }
+        if (Permissions.hasPermission(player, "plots.web.download")) {
+            args.add("download");
+        }
+        if (Permissions.hasPermission(player, "plots.web.upload")) {
+            args.add("upload");
+        }
         if (args.size() == 0) {
             MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.reload");
             return;
         }
-        MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot web <" + StringUtils.join(args, "|") + ">");
+        MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot web <" + StringMan.join(args, "|") + ">");
     }
 
     public static List<File> getFiles(final File root, final List<File> files) {
@@ -89,8 +87,8 @@ public class Web extends SubCommand {
                     MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.reload");
                     return false;
                 }
-                Main.imp().onDisable();
-                Main.imp().onEnable();
+                Main.imp().close();
+                Main.imp().open();
                 MainUtil.sendMessage(player, "&aReloaded success!");
                 return true;
             }
@@ -208,8 +206,7 @@ public class Web extends SubCommand {
                         }
                         String worldName = (plot.getArea() instanceof SinglePlotArea) ? plot.getId().toString().replace(';', ',') : plot.getArea().worldname;
                         final String filename = plot.getId().x + "," + plot.getId().y + "," + worldName + "," + owner + ".zip";
-                        final World world = Bukkit.getWorld(worldName);
-                        world.save();
+                        com.intellectualcrafters.plot.util.WorldUtil.IMP.saveWorld(worldName);
                         boolean result;
                         try {
                             result = WorldUtil.save(plot, filename);
@@ -257,7 +254,7 @@ public class Web extends SubCommand {
                                     public void run() {
                                         MainUtil.sendMessage(player, "&6Generating link...");
                                         final String filename = plot.getId().x + ";" + plot.getId().y + "," + plot.getArea() + "," + owner + ".schematic";
-                                        final boolean result = SchematicHandler.manager.save(value, Main.imp().getDataFolder() + File.separator + "downloads" + File.separator + filename);
+                                        final boolean result = SchematicHandler.manager.save(value, Main.imp().DIR + File.separator + "downloads" + File.separator + filename);
                                         if (!result) {
                                             MainUtil.sendMessage(player, "&7Could not export &c" + plot.getId());
                                         } else {
