@@ -10,7 +10,7 @@ public class BukkitMain extends JavaPlugin {
     public void onEnable() {
         try {
             this.main = new Main();
-        } catch (URISyntaxException e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
         main.open();

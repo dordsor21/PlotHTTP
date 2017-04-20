@@ -8,6 +8,7 @@ import com.intellectualcrafters.plot.commands.CommandCategory;
 import com.intellectualcrafters.plot.commands.MainCommand;
 import com.intellectualcrafters.plot.config.C;
 import com.intellectualcrafters.plot.object.PlotArea;
+import com.intellectualcrafters.plot.object.PlotMessage;
 import com.intellectualcrafters.plot.object.PlotPlayer;
 import com.intellectualcrafters.plot.object.RunnableVal2;
 import com.intellectualcrafters.plot.object.RunnableVal3;
@@ -49,7 +50,15 @@ public class Upload extends Command {
             port = "";
         }
         WebResource.worldUploads.put(id, player);
-        MainUtil.sendMessage(player, "Upload the world: " + Main.config().WEB_IP + port + "/web?id=" + id);
+        String link = Main.config().WEB_IP + port + "/web?id=" + id;
+
+        if (com.intellectualcrafters.plot.config.Settings.PLATFORM.equalsIgnoreCase("bukkit")) {
+            player.sendMessage(C.PREFIX.s() + "Upload the world: " + link);
+        } else {
+            PlotMessage clickable = new PlotMessage().text(C.color(C.PREFIX.s() + "Upload the world: " + link)).color("$1").suggest(link);
+            clickable.send(player);
+        }
+
         final HashMap<String, String> map = new HashMap<>();
         map.put("id", id);
         final Request r = new Request("*", "*", "/web", map, 2);

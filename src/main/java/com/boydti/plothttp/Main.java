@@ -20,7 +20,9 @@ import com.intellectualcrafters.plot.commands.MainCommand;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.HashMap;
 
@@ -58,9 +60,10 @@ public class Main {
         return IMP.settings;
     }
 
-    public Main() throws URISyntaxException {
+    public Main() throws URISyntaxException, MalformedURLException {
         IMP = this;
-        FILE = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+        URL url = Main.class.getProtectionDomain().getCodeSource().getLocation();
+        FILE = new File(new URL(url.toURI().toString().split("\\!")[0].replaceAll("jar:file", "file")).toURI().getPath());
         DIR = new File(FILE.getParentFile(), "PlotHTTP");
     }
 
