@@ -1,5 +1,6 @@
 package com.boydti.plothttp.util;
 
+import com.boydti.plothttp.Main;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -36,8 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
-
-import com.boydti.plothttp.Main;
 
 /**
  * A simple, tiny, nicely embeddable HTTP server in Java
@@ -310,6 +309,14 @@ public abstract class NanoHTTPD {
         final Map<String, String> parms = session.getParms();
         parms.put(QUERY_STRING_PARAMETER, session.getQueryParameterString());
         return serve(session.getUri(), method, session.getHeaders(), parms, files);
+    }
+
+    /**
+     * Called when response is a success
+     * @param response
+     */
+    public void success(Response response) {
+
     }
 
     /**
@@ -1447,6 +1454,10 @@ public abstract class NanoHTTPD {
             for (final Cookie cookie : this.queue) {
                 response.addHeader("Set-Cookie", cookie.getHTTPHeader());
             }
+        }
+
+        public HashMap<String, String> getCookies() {
+            return cookies;
         }
     }
 }

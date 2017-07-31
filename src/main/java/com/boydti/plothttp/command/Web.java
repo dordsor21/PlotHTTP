@@ -185,6 +185,7 @@ public class Web extends SubCommand {
                             public void run() {
                                 MainUtil.sendMessage(player, "&6Generating link...");
                                 WebResource.downloads.put(id, schem.getAbsolutePath());
+                                WebResource.downloadsUUID.put(id, player.getUUID());
                                 MainUtil.sendMessage(player, "Download the file: " + Main.config().WEB_IP + port + "/web?id=" + id);
                                 final HashMap<String, String> map = new HashMap<>();
                                 map.put("id", id);
@@ -217,6 +218,7 @@ public class Web extends SubCommand {
                         if (result) {
                             MainUtil.sendMessage(player, "&6Generating link... (this will take 10 seconds)");
                             WebResource.downloads.put(id, filename);
+                            WebResource.downloadsUUID.put(id, player.getUUID());
                             TaskManager.runTaskLater(new Runnable() {
                                 @Override
                                 public void run() {
@@ -260,6 +262,7 @@ public class Web extends SubCommand {
                                         } else {
                                             MainUtil.sendMessage(null, "&7 - &a  success: " + plot.getId());
                                             WebResource.downloads.put(id, filename);
+                                            WebResource.downloadsUUID.put(id, player.getUUID());
                                             MainUtil.sendMessage(player, "Download the file: " + Main.config().WEB_IP + port + "/web?id=" + id);
                                             final HashMap<String, String> map = new HashMap<>();
                                             map.put("id", id);

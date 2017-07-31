@@ -14,6 +14,8 @@ public class WebSettings extends Config {
     public int PORT = 8080;
     @Comment("The public web url")
     public String WEB_IP = "http://empcraft.com";
+    @Comment("Log file")
+    public String LOG_FILE = "plothttp.log";
 
     @Create
     public WHITELIST WHITELIST;

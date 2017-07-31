@@ -12,6 +12,7 @@ import com.boydti.plothttp.object.SchematicResource;
 import com.boydti.plothttp.object.UUIDResource;
 import com.boydti.plothttp.object.WebResource;
 import com.boydti.plothttp.object.WorldResource;
+import com.boydti.plothttp.util.Logger;
 import com.boydti.plothttp.util.RequestManager;
 import com.boydti.plothttp.util.ResourceManager;
 import com.boydti.plothttp.util.ServerRunner;
@@ -37,6 +38,7 @@ public class Main {
     private WebSettings settings;
 
     private boolean commands = false;
+    private Logger logger;
 
     public static void deleteFolder(final File folder) {
         final File[] files = folder.listFiles();
@@ -104,6 +106,27 @@ public class Main {
             }
         });
         MainUtil.copyFile(FILE, "level.dat", DIR);
+
+        setupLogger();
+    }
+
+    private void setupLogger() {
+        try {
+            if (this.logger != null) {
+                this.logger.close();
+            }
+            File file = MainUtil.getFile(DIR, settings.LOG_FILE);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            this.logger = new Logger(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Logger getLogger() {
+        return logger;
     }
 
     public PlotServer getWebServer() {

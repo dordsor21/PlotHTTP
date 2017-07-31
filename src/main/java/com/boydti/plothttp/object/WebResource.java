@@ -31,6 +31,7 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -41,6 +42,7 @@ public class WebResource extends Resource {
 
     // File pointers
     public static HashMap<String, String> downloads = new HashMap<>();
+    public static HashMap<String, UUID> downloadsUUID = new HashMap<>();
 
     // Plot pointers
     public static HashMap<String, Plot> uploads = new HashMap<>();
@@ -61,6 +63,7 @@ public class WebResource extends Resource {
     // will return an HTML web page
     @Override
     public byte[] getResult(final Request request, final IHTTPSession session) {
+        isDownload = false;
         String page = request.ARGS.get("page");
         if (page == null) {
             page = "index";
@@ -71,6 +74,7 @@ public class WebResource extends Resource {
             // downloads
             final String download = downloads.get(id);
             if (download != null) {
+                UUID uuid = downloadsUUID.get(id);
                 final File tmp = new File(download);
                 File file;
                 if (tmp.isAbsolute()) {
@@ -97,6 +101,7 @@ public class WebResource extends Resource {
                     }
                 }
                 try {
+                    Main.imp().getLogger().logFileRequest(uuid, file, request, session);
                     return Files.readAllBytes(file.toPath());
                 } catch (final IOException e) {
                     e.printStackTrace();
@@ -311,7 +316,13 @@ public class WebResource extends Resource {
         if (isDownload) {
             page.addHeader("Content-Disposition", "attachment; filename=" + filename);
             filename = "plot.schematic";
-            isDownload = false;
+        }
+    }
+
+    @Override
+    public void onSuccess(Response page) {
+        if (isDownload) {
+            Main.imp().getLogger().writeLine("All bytes sent!\n");
         }
     }
 }
