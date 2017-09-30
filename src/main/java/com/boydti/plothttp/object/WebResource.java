@@ -180,6 +180,8 @@ public class WebResource extends Resource {
                             try {
                                 PlotArea area = PS.get().getPlotArea("*", null);
                                 if (area != null) {
+                                    final Map<String, String> files = new HashMap<String, String>();
+                                    session.parseBody(files);
                                     Plot plot = TaskManager.IMP.sync(new com.boydti.fawe.object.RunnableVal<Plot>() {
                                         @Override
                                         public void run(Plot o) {
@@ -189,99 +191,95 @@ public class WebResource extends Resource {
                                                 MainUtil.sendMessage(player, C.CANT_CLAIM_MORE_PLOTS_NUM, -diff + "");
                                                 return;
                                             }
-                                            if (area.getMeta("lastPlot") == null) {
-                                                area.setMeta("lastPlot", new PlotId(0, 0));
-                                            }
-                                            PlotId lastId = (PlotId) area.getMeta("lastPlot");
-                                            while (true) {
-                                                lastId = Auto.getNextPlotId(lastId, 1);
-                                                if (area.canClaim(player, lastId, lastId)) {
-                                                    break;
-                                                }
-                                            }
-                                            area.setMeta("lastPlot", lastId);
-                                            this.value = area.getPlot(lastId);
-                                            this.value.setOwner(player.getUUID());
-                                        }
-                                    });
-                                    if (plot != null) {
-                                        final Map<String, String> files = new HashMap<String, String>();
-                                        session.parseBody(files);
-                                        PlotId pid = plot.getId();
-                                        File directory = new File(PS.imp().getWorldContainer(), pid.x + "," + pid.y + File.separator + "region");
-                                        if (!directory.exists()) {
-                                            directory.mkdirs();
-                                        }
-                                        final Set<String> keys = files.keySet();
-                                        for (final String key : keys) {
-                                            final String location = files.get(key);
-                                            final File tempfile = new File(location);
-                                            if (key.endsWith(".mca")) {
-                                                File newFile = new File(directory, key);
-                                                if (!newFile.exists()) {
-                                                    System.out.println(newFile.getParentFile().mkdirs());
-                                                }
-                                                Files.copy(tempfile.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                                            } else if (key.endsWith(".zip")) {
-                                                FileInputStream fis = new FileInputStream(tempfile);
-                                                ZipInputStream zis = new ZipInputStream(new LimitedSizeInputStream(new BufferedInputStream(fis), Main.config().CONTENT.MAX_UPLOAD));
-                                                ZipEntry entry;
-                                                int entries = 0;
-                                                long total = 0;
-                                                int buffer = 4096;
-                                                int max_entries = 1024;
-                                                try {
-                                                    while ((entry = zis.getNextEntry()) != null) {
-                                                        int count;
-                                                        byte data[] = new byte[buffer];
-                                                        // Write the files to the disk, but ensure that the filename is valid,
-                                                        // and that the file is not insanely big
-                                                        String name = entry.getName();
-                                                        if (!name.endsWith(".mca")) {
-                                                            continue;
-                                                        }
-                                                        String[] split = name.split("[\\|/]");
-                                                        name = split[split.length - 1];
-                                                        FileOutputStream fos = new FileOutputStream(new File(directory, name));
-                                                        BufferedOutputStream dest = new BufferedOutputStream(fos, buffer);
-                                                        while (total + buffer <= Main.config().CONTENT.MAX_UPLOAD && (count = zis.read(data, 0, buffer)) != -1) {
-                                                            dest.write(data, 0, count);
-                                                            total += count;
-                                                        }
-                                                        dest.flush();
-                                                        dest.close();
-                                                        zis.closeEntry();
-                                                        entries++;
-                                                        if (entries > max_entries) {
-                                                            player.sendMessage("Too many files to unzip. (1024)");
-                                                            throw new IllegalStateException("Too many files to unzip.");
-                                                        }
-                                                        if (total > Main.config().CONTENT.MAX_UPLOAD) {
-                                                            player.sendMessage("File being unzipped is too big." + plot);
-                                                            throw new IllegalStateException("File being unzipped is too big.");
-                                                        }
-                                                    }
-                                                } finally {
-                                                    zis.close();
-                                                }
-                                            } else {
-                                                player.sendMessage("Skipping non world file: " + key);
-                                            }
-                                        }
-                                        result.append("Your new world is located at " + plot);
-                                        if (player.isOnline()) {
-                                            TaskManager.IMP.sync(new com.boydti.fawe.object.RunnableVal<Object>() {
+                                            Auto.autoClaimFromDatabase(player, area, null, new RunnableVal<Plot>() {
                                                 @Override
-                                                public void run(Object o) {
-                                                    plot.teleportPlayer(player);
+                                                public void run(Plot plot) {
+                                                    if (plot != null) {
+                                                        plot.setOwner(player.getUUID());
+
+                                                        try {
+                                                            PlotId pid = plot.getId();
+                                                            File directory = new File(PS.imp().getWorldContainer(), pid.x + "," + pid.y + File.separator + "region");
+                                                            if (!directory.exists()) {
+                                                                directory.mkdirs();
+                                                            }
+                                                            final Set<String> keys = files.keySet();
+                                                            for (final String key : keys) {
+                                                                final String location = files.get(key);
+                                                                final File tempfile = new File(location);
+                                                                if (key.endsWith(".mca")) {
+                                                                    File newFile = new File(directory, key);
+                                                                    if (!newFile.exists()) {
+                                                                        System.out.println(newFile.getParentFile().mkdirs());
+                                                                    }
+                                                                    Files.copy(tempfile.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                                                                } else if (key.endsWith(".zip")) {
+                                                                    FileInputStream fis = new FileInputStream(tempfile);
+                                                                    ZipInputStream zis = new ZipInputStream(new LimitedSizeInputStream(new BufferedInputStream(fis), Main.config().CONTENT.MAX_UPLOAD));
+                                                                    ZipEntry entry;
+                                                                    int entries = 0;
+                                                                    long total = 0;
+                                                                    int buffer = 4096;
+                                                                    int max_entries = 1024;
+                                                                    try {
+                                                                        while ((entry = zis.getNextEntry()) != null) {
+                                                                            int count;
+                                                                            byte data[] = new byte[buffer];
+                                                                            // Write the files to the disk, but ensure that the filename is valid,
+                                                                            // and that the file is not insanely big
+                                                                            String name = entry.getName();
+                                                                            if (!name.endsWith(".mca")) {
+                                                                                continue;
+                                                                            }
+                                                                            String[] split = name.split("[\\|/]");
+                                                                            name = split[split.length - 1];
+                                                                            FileOutputStream fos = new FileOutputStream(new File(directory, name));
+                                                                            BufferedOutputStream dest = new BufferedOutputStream(fos, buffer);
+                                                                            while (total + buffer <= Main.config().CONTENT.MAX_UPLOAD && (count = zis.read(data, 0, buffer)) != -1) {
+                                                                                dest.write(data, 0, count);
+                                                                                total += count;
+                                                                            }
+                                                                            dest.flush();
+                                                                            dest.close();
+                                                                            zis.closeEntry();
+                                                                            entries++;
+                                                                            if (entries > max_entries) {
+                                                                                player.sendMessage("Too many files to unzip. (1024)");
+                                                                                throw new IllegalStateException("Too many files to unzip.");
+                                                                            }
+                                                                            if (total > Main.config().CONTENT.MAX_UPLOAD) {
+                                                                                player.sendMessage("File being unzipped is too big." + plot);
+                                                                                throw new IllegalStateException("File being unzipped is too big.");
+                                                                            }
+                                                                        }
+                                                                    } finally {
+                                                                        zis.close();
+                                                                    }
+                                                                } else {
+                                                                    player.sendMessage("Skipping non world file: " + key);
+                                                                }
+                                                            }
+                                                            result.append("Your new world is located at " + plot);
+                                                            if (player.isOnline()) {
+                                                                TaskManager.IMP.sync(new com.boydti.fawe.object.RunnableVal<Object>() {
+                                                                    @Override
+                                                                    public void run(Object o) {
+                                                                        plot.teleportPlayer(player);
+                                                                    }
+                                                                });
+                                                            }
+                                                            player.sendMessage("Your new world is located at " + plot);
+                                                            return;
+                                                        } catch (IOException e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                        MainUtil.sendMessage(player, C.NO_FREE_PLOTS);
+                                                        result.append(C.NO_FREE_PLOTS.s());
+                                                    }
                                                 }
                                             });
                                         }
-                                        player.sendMessage("Your new world is located at " + plot);
-                                    } else {
-                                        MainUtil.sendMessage(player, C.NO_FREE_PLOTS);
-                                        result.append(C.NO_FREE_PLOTS.s());
-                                    }
+                                    });
                                 } else {
                                     player.sendMessage("Server does not allow world uploads!");
                                     result.append("Server does not allow world uploads!");
