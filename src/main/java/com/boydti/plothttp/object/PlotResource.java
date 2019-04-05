@@ -5,14 +5,14 @@ import java.util.Iterator;
 import java.util.UUID;
 
 import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
-import com.intellectualcrafters.json.JSONArray;
-import com.intellectualcrafters.json.JSONObject;
-import com.intellectualcrafters.plot.PS;
-import com.intellectualcrafters.plot.object.BlockLoc;
-import com.intellectualcrafters.plot.object.Plot;
-import com.intellectualcrafters.plot.object.PlotCluster;
-import com.intellectualcrafters.plot.object.PlotId;
-import com.intellectualcrafters.plot.util.UUIDHandler;
+import com.github.intellectualsites.plotsquared.json.JSONArray;
+import com.github.intellectualsites.plotsquared.json.JSONObject;
+import com.github.intellectualsites.plotsquared.plot.PlotSquared;
+import com.github.intellectualsites.plotsquared.plot.object.BlockLoc;
+import com.github.intellectualsites.plotsquared.plot.object.Plot;
+import com.github.intellectualsites.plotsquared.plot.object.PlotCluster;
+import com.github.intellectualsites.plotsquared.plot.object.PlotId;
+import com.github.intellectualsites.plotsquared.plot.util.UUIDHandler;
 
 public class PlotResource extends Resource {
 
@@ -35,7 +35,7 @@ public class PlotResource extends Resource {
         if (idStr != null) {
             id = PlotId.fromString(idStr);
         }
-        Collection<Plot> plots = PS.get().getPlots();
+        Collection<Plot> plots = PlotSquared.get().getPlots();
         
 
         if (id != null) {

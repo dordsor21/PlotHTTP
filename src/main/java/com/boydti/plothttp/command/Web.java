@@ -4,25 +4,26 @@ import com.boydti.plothttp.Main;
 import com.boydti.plothttp.object.Request;
 import com.boydti.plothttp.object.WebResource;
 import com.boydti.plothttp.util.WorldUtil;
-import com.intellectualcrafters.configuration.file.YamlConfiguration;
-import com.intellectualcrafters.jnbt.CompoundTag;
-import com.intellectualcrafters.plot.PS;
-import com.intellectualcrafters.plot.commands.CommandCategory;
-import com.intellectualcrafters.plot.commands.RequiredType;
-import com.intellectualcrafters.plot.commands.SubCommand;
-import com.intellectualcrafters.plot.config.C;
-import com.intellectualcrafters.plot.object.Plot;
-import com.intellectualcrafters.plot.object.PlotArea;
-import com.intellectualcrafters.plot.object.PlotPlayer;
-import com.intellectualcrafters.plot.object.RunnableVal;
-import com.intellectualcrafters.plot.object.worlds.SinglePlotArea;
-import com.intellectualcrafters.plot.util.MainUtil;
-import com.intellectualcrafters.plot.util.Permissions;
-import com.intellectualcrafters.plot.util.SchematicHandler;
-import com.intellectualcrafters.plot.util.StringMan;
-import com.intellectualcrafters.plot.util.TaskManager;
-import com.intellectualcrafters.plot.util.UUIDHandler;
-import com.plotsquared.general.commands.CommandDeclaration;
+import com.github.intellectualsites.plotsquared.commands.CommandDeclaration;
+import com.github.intellectualsites.plotsquared.configuration.file.YamlConfiguration;
+import com.github.intellectualsites.plotsquared.plot.PlotSquared;
+import com.github.intellectualsites.plotsquared.plot.commands.CommandCategory;
+import com.github.intellectualsites.plotsquared.plot.commands.RequiredType;
+import com.github.intellectualsites.plotsquared.plot.commands.SubCommand;
+import com.github.intellectualsites.plotsquared.plot.config.Captions;
+import com.github.intellectualsites.plotsquared.plot.object.Plot;
+import com.github.intellectualsites.plotsquared.plot.object.PlotArea;
+import com.github.intellectualsites.plotsquared.plot.object.PlotPlayer;
+import com.github.intellectualsites.plotsquared.plot.object.RunnableVal;
+import com.github.intellectualsites.plotsquared.plot.object.worlds.SinglePlotArea;
+import com.github.intellectualsites.plotsquared.plot.util.MainUtil;
+import com.github.intellectualsites.plotsquared.plot.util.Permissions;
+import com.github.intellectualsites.plotsquared.plot.util.SchematicHandler;
+import com.github.intellectualsites.plotsquared.plot.util.StringMan;
+import com.github.intellectualsites.plotsquared.plot.util.TaskManager;
+import com.github.intellectualsites.plotsquared.plot.util.UUIDHandler;
+import com.sk89q.jnbt.CompoundTag;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,10 +51,10 @@ public class Web extends SubCommand {
             args.add("upload");
         }
         if (args.size() == 0) {
-            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.reload");
+            MainUtil.sendMessage(player, Captions.NO_PERMISSION, "plots.web.reload");
             return;
         }
-        MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot web <" + StringMan.join(args, "|") + ">");
+        MainUtil.sendMessage(player, Captions.COMMAND_SYNTAX, "/plot web <" + StringMan.join(args, "|") + ">");
     }
 
     public static List<File> getFiles(final File root, final List<File> files) {
@@ -84,7 +85,7 @@ public class Web extends SubCommand {
         switch (args[0]) {
             case "reload": {
                 if (!Permissions.hasPermission(player, "plots.web.reload")) {
-                    MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.reload");
+                    MainUtil.sendMessage(player, Captions.NO_PERMISSION, "plots.web.reload");
                     return false;
                 }
                 Main.imp().close();
@@ -94,11 +95,11 @@ public class Web extends SubCommand {
             }
             case "download": {
                 if (!Permissions.hasPermission(player, "plots.web.download")) {
-                    MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.download");
+                    MainUtil.sendMessage(player, Captions.NO_PERMISSION, "plots.web.download");
                     return false;
                 }
                 if (args.length < 2) {
-                    MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot web download <schematic|world|worldedit>");
+                    MainUtil.sendMessage(player, Captions.COMMAND_SYNTAX, "/plot web download <schematic|world|worldedit>");
                     return false;
                 }
                 final Plot plot;
@@ -111,13 +112,13 @@ public class Web extends SubCommand {
                     case "schematic": {
                         plot = player.getCurrentPlot();
                         if ((plot == null) || (!plot.isAdded(player.getUUID()) && !Permissions.hasPermission(player, "plots.web.download.other"))) {
-                            MainUtil.sendMessage(player, C.NO_PLOT_PERMS);
+                            MainUtil.sendMessage(player, Captions.NO_PLOT_PERMS);
                             return false;
                         }
                         break;
                     }
                     default: {
-                        MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot web download <schematic|world|worldedit>");
+                        MainUtil.sendMessage(player, Captions.COMMAND_SYNTAX, "/plot web download <schematic|world|worldedit>");
                         return false;
                     }
                 }
@@ -139,14 +140,14 @@ public class Web extends SubCommand {
                     port = "";
                 }
                 if (!Permissions.hasPermission(player, "plots.web.download." + args[1].toLowerCase())) {
-                    MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.download." + args[1].toLowerCase());
+                    MainUtil.sendMessage(player, Captions.NO_PERMISSION, "plots.web.download." + args[1].toLowerCase());
                     return false;
                 }
                 MainUtil.sendMessage(player, "&6Please wait while we process your plot...");
                 switch (args[1].toLowerCase()) {
                     case "worldedit": {
                         if (!Permissions.hasPermission(player, "plots.web.download.worldedit")) {
-                            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.download.worldedit");
+                            MainUtil.sendMessage(player, Captions.NO_PERMISSION, "plots.web.download.worldedit");
                             return false;
                         }
                         final File worldeditDir = new File("plugins" + File.separator + "WorldEdit");
@@ -198,7 +199,7 @@ public class Web extends SubCommand {
                     }
                     case "world": {
                         if (!Permissions.hasPermission(player, "plots.web.download.world")) {
-                            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.download.world");
+                            MainUtil.sendMessage(player, Captions.NO_PERMISSION, "plots.web.download.world");
                             return false;
                         }
                         final String owner = UUIDHandler.getName(plot.owner);
@@ -207,7 +208,7 @@ public class Web extends SubCommand {
                         }
                         String worldName = (plot.getArea() instanceof SinglePlotArea) ? plot.getId().toString().replace(';', ',') : plot.getArea().worldname;
                         final String filename = plot.getId().x + "," + plot.getId().y + "," + worldName + "," + owner + ".zip";
-                        com.intellectualcrafters.plot.util.WorldUtil.IMP.saveWorld(worldName);
+                        com.github.intellectualsites.plotsquared.plot.util.WorldUtil.IMP.saveWorld(worldName);
                         boolean result;
                         try {
                             result = WorldUtil.save(plot, filename);
@@ -238,7 +239,7 @@ public class Web extends SubCommand {
                     }
                     case "schematic": {
                         if (!Permissions.hasPermission(player, "plots.web.download.schematic")) {
-                            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.download.schematic");
+                            MainUtil.sendMessage(player, Captions.NO_PERMISSION, "plots.web.download.schematic");
                             return false;
                         }
                         MainUtil.sendMessage(player, "&6Processing plot...");
@@ -281,22 +282,22 @@ public class Web extends SubCommand {
             }
             case "upload": {
                 if (!Permissions.hasPermission(player, "plots.web.upload")) {
-                    MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.upload");
+                    MainUtil.sendMessage(player, Captions.NO_PERMISSION, "plots.web.upload");
                     return false;
                 }
                 if (args.length < 2) {
-                    MainUtil.sendMessage(player, C.COMMAND_SYNTAX, "/plot web upload <schematic|world>");
+                    MainUtil.sendMessage(player, Captions.COMMAND_SYNTAX, "/plot web upload <schematic|world>");
                     return false;
                 }
                 switch (args[1].toLowerCase()) {
                     case "schematic": {
                         if (!Permissions.hasPermission(player, "plots.web.upload.schematic")) {
-                            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.upload.schematic");
+                            MainUtil.sendMessage(player, Captions.NO_PERMISSION, "plots.web.upload.schematic");
                             return false;
                         }
                         final Plot plot = player.getCurrentPlot();
                         if ((plot == null) || !plot.isAdded(player.getUUID()) && !Permissions.hasPermission(player, "plots.web.download.other")) {
-                            MainUtil.sendMessage(player, C.NO_PLOT_PERMS);
+                            MainUtil.sendMessage(player, Captions.NO_PLOT_PERMS);
                             return true;
                         }
                         MainUtil.sendMessage(player, "&6Generating link...");
@@ -317,10 +318,10 @@ public class Web extends SubCommand {
                     }
                     case "world": {
                         if (!Permissions.hasPermission(player, "plots.web.upload.world")) {
-                            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.upload.world");
+                            MainUtil.sendMessage(player, Captions.NO_PERMISSION, "plots.web.upload.world");
                             return false;
                         }
-                        PlotArea area = PS.get().getPlotArea("*", null);
+                        PlotArea area = PlotSquared.get().getPlotArea("*", null);
                         if (area == null) {
                             MainUtil.sendMessage(player, "&6World uploads are disabled!");
                             return false;

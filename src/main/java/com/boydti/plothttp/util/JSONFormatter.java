@@ -2,9 +2,9 @@ package com.boydti.plothttp.util;
 
 import java.util.Iterator;
 
-import com.intellectualcrafters.json.JSONArray;
-import com.intellectualcrafters.json.JSONException;
-import com.intellectualcrafters.json.JSONObject;
+import com.github.intellectualsites.plotsquared.json.JSONArray;
+import com.github.intellectualsites.plotsquared.json.JSONException;
+import com.github.intellectualsites.plotsquared.json.JSONObject;
 
 public class JSONFormatter {
 

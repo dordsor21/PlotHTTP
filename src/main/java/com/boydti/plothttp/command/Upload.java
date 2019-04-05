@@ -3,19 +3,21 @@ package com.boydti.plothttp.command;
 import com.boydti.plothttp.Main;
 import com.boydti.plothttp.object.Request;
 import com.boydti.plothttp.object.WebResource;
-import com.intellectualcrafters.plot.PS;
-import com.intellectualcrafters.plot.commands.CommandCategory;
-import com.intellectualcrafters.plot.commands.MainCommand;
-import com.intellectualcrafters.plot.config.C;
-import com.intellectualcrafters.plot.object.PlotArea;
-import com.intellectualcrafters.plot.object.PlotMessage;
-import com.intellectualcrafters.plot.object.PlotPlayer;
-import com.intellectualcrafters.plot.object.RunnableVal2;
-import com.intellectualcrafters.plot.object.RunnableVal3;
-import com.intellectualcrafters.plot.util.MainUtil;
-import com.intellectualcrafters.plot.util.Permissions;
-import com.plotsquared.general.commands.Command;
-import com.plotsquared.general.commands.CommandDeclaration;
+import com.github.intellectualsites.plotsquared.commands.Command;
+import com.github.intellectualsites.plotsquared.commands.CommandDeclaration;
+import com.github.intellectualsites.plotsquared.plot.PlotSquared;
+import com.github.intellectualsites.plotsquared.plot.commands.CommandCategory;
+import com.github.intellectualsites.plotsquared.plot.commands.MainCommand;
+import com.github.intellectualsites.plotsquared.plot.config.Captions;
+import com.github.intellectualsites.plotsquared.plot.config.Settings;
+import com.github.intellectualsites.plotsquared.plot.object.PlotArea;
+import com.github.intellectualsites.plotsquared.plot.object.PlotMessage;
+import com.github.intellectualsites.plotsquared.plot.object.PlotPlayer;
+import com.github.intellectualsites.plotsquared.plot.object.RunnableVal2;
+import com.github.intellectualsites.plotsquared.plot.object.RunnableVal3;
+import com.github.intellectualsites.plotsquared.plot.util.MainUtil;
+import com.github.intellectualsites.plotsquared.plot.util.Permissions;
+
 import java.util.HashMap;
 
 @CommandDeclaration(
@@ -33,10 +35,10 @@ public class Upload extends Command {
     @Override
     public void execute(PlotPlayer player, String[] args, RunnableVal3<Command, Runnable, Runnable> confirm, RunnableVal2<Command, CommandResult> whenDone) throws CommandException {
         if (!Permissions.hasPermission(player, "plots.web.upload.world")) {
-            MainUtil.sendMessage(player, C.NO_PERMISSION, "plots.web.upload.world");
+            MainUtil.sendMessage(player, Captions.NO_PERMISSION, "plots.web.upload.world");
             return;
         }
-        PlotArea area = PS.get().getPlotArea("*", null);
+        PlotArea area = PlotSquared.get().getPlotArea("*", null);
         if (area == null) {
             MainUtil.sendMessage(player, "&6World uploads are disabled!");
             return;
@@ -52,10 +54,10 @@ public class Upload extends Command {
         WebResource.worldUploads.put(id, player);
         String link = Main.config().WEB_IP + port + "/web?id=" + id;
 
-        if (com.intellectualcrafters.plot.config.Settings.PLATFORM.equalsIgnoreCase("bukkit")) {
-            player.sendMessage(C.PREFIX.s() + "Upload the world: " + link);
+        if (Settings.PLATFORM.equalsIgnoreCase("bukkit")) {
+            player.sendMessage(Captions.PREFIX.s() + "Upload the world: " + link);
         } else {
-            PlotMessage clickable = new PlotMessage().text(C.color(C.PREFIX.s() + "Upload the world: " + link)).color("$1").suggest(link);
+            PlotMessage clickable = new PlotMessage().text(Captions.color(Captions.PREFIX.s() + "Upload the world: " + link)).color("$1").suggest(link);
             clickable.send(player);
         }
 

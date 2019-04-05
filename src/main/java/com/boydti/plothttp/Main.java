@@ -17,7 +17,8 @@ import com.boydti.plothttp.util.RequestManager;
 import com.boydti.plothttp.util.ResourceManager;
 import com.boydti.plothttp.util.ServerRunner;
 import com.boydti.plothttp.util.WebUtil;
-import com.intellectualcrafters.plot.commands.MainCommand;
+import com.github.intellectualsites.plotsquared.plot.commands.MainCommand;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -143,7 +144,7 @@ public class Main {
             return;
         }
         this.commands = true;
-        MainCommand.getInstance().addCommand(new Web());
+        MainCommand.getInstance().register(new Web());
         MainCommand.getInstance().register(new Upload());
     }
 

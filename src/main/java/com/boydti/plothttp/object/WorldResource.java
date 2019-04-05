@@ -6,12 +6,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
-import com.intellectualcrafters.json.JSONArray;
-import com.intellectualcrafters.json.JSONObject;
-import com.intellectualcrafters.plot.PS;
-import com.intellectualcrafters.plot.object.PlotArea;
-import com.intellectualcrafters.plot.util.SetupUtils;
-import com.intellectualcrafters.plot.util.StringMan;
+import com.github.intellectualsites.plotsquared.json.JSONArray;
+import com.github.intellectualsites.plotsquared.json.JSONObject;
+import com.github.intellectualsites.plotsquared.plot.PlotSquared;
+import com.github.intellectualsites.plotsquared.plot.object.PlotArea;
+import com.github.intellectualsites.plotsquared.plot.util.SetupUtils;
+import com.github.intellectualsites.plotsquared.plot.util.StringMan;
 
 public class WorldResource extends Resource {
 
@@ -30,7 +30,7 @@ public class WorldResource extends Resource {
         final String id = request.ARGS.get("id");
         final Collection<PlotArea> areas;
         if (area == null) {
-            areas = new HashSet<>(PS.get().getPlotAreas());
+            areas = new HashSet<>(PlotSquared.get().getPlotAreas());
             if (id != null) {
                 Iterator<PlotArea> iter = areas.iterator();
                 while (iter.hasNext()) {
@@ -51,7 +51,7 @@ public class WorldResource extends Resource {
                 }
             }
         } else {
-            PlotArea pa = PS.get().getPlotAreaByString(area);
+            PlotArea pa = PlotSquared.get().getPlotAreaByString(area);
             areas = pa == null ? new HashSet<PlotArea>() : Collections.singletonList(pa);
         }
         if (areas.size() == 0) {

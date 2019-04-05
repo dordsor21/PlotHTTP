@@ -2,11 +2,11 @@ package com.boydti.plothttp.util;
 
 import com.boydti.fawe.util.ReflectionUtils;
 import com.boydti.plothttp.Main;
-import com.intellectualcrafters.plot.PS;
-import com.intellectualcrafters.plot.object.ChunkLoc;
-import com.intellectualcrafters.plot.object.Location;
-import com.intellectualcrafters.plot.object.Plot;
-import com.intellectualcrafters.plot.util.ChunkManager;
+import com.github.intellectualsites.plotsquared.plot.PlotSquared;
+import com.github.intellectualsites.plotsquared.plot.object.ChunkLoc;
+import com.github.intellectualsites.plotsquared.plot.object.Location;
+import com.github.intellectualsites.plotsquared.plot.object.Plot;
+import com.github.intellectualsites.plotsquared.plot.util.ChunkManager;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.IntTag;
 import com.sk89q.jnbt.NBTInputStream;
@@ -76,7 +76,7 @@ public class WorldUtil {
                 out.writeNamedTag("", tag);
             }
         } else {
-            PS.debug("NO DAT FOUND");
+            PlotSquared.debug("NO DAT FOUND");
         }
         
 
@@ -121,7 +121,7 @@ public class WorldUtil {
     }
 
     public static File getMcr(final String world, final int x, final int z) {
-        final File file = new File(PS.imp().getWorldContainer(), world + File.separator + "region" + File.separator + "r." + x + "." + z + ".mca");
+        final File file = new File(PlotSquared.imp().getWorldContainer(), world + File.separator + "region" + File.separator + "r." + x + "." + z + ".mca");
         if (file.exists()) {
             return file;
         }
