@@ -1,7 +1,6 @@
 package com.boydti.plothttp;
 
-import com.boydti.fawe.util.MainUtil;
-import com.boydti.fawe.util.TaskManager;
+import com.github.intellectualsites.plotsquared.plot.util.MainUtil;
 import com.boydti.plothttp.command.Upload;
 import com.boydti.plothttp.command.Web;
 import com.boydti.plothttp.object.ClusterResource;
@@ -12,12 +11,14 @@ import com.boydti.plothttp.object.SchematicResource;
 import com.boydti.plothttp.object.UUIDResource;
 import com.boydti.plothttp.object.WebResource;
 import com.boydti.plothttp.object.WorldResource;
+import com.boydti.plothttp.util.FileUtil;
 import com.boydti.plothttp.util.Logger;
 import com.boydti.plothttp.util.RequestManager;
 import com.boydti.plothttp.util.ResourceManager;
 import com.boydti.plothttp.util.ServerRunner;
 import com.boydti.plothttp.util.WebUtil;
 import com.github.intellectualsites.plotsquared.plot.commands.MainCommand;
+import com.github.intellectualsites.plotsquared.plot.util.TaskManager;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -88,7 +89,7 @@ public class Main {
         // Setup commands
         setupCommands();
 
-        TaskManager.IMP.async(new Runnable() {
+        TaskManager.IMP.taskAsync(new Runnable() {
             @Override
             public void run() {
                 server = ServerRunner.run(PlotServer.class);
@@ -106,7 +107,10 @@ public class Main {
                 }
             }
         });
-        MainUtil.copyFile(FILE, "level.dat", DIR);
+        if (!DIR.exists()) {
+            DIR.mkdirs();
+        }
+        FileUtil.copyFile(FILE, "level.dat", DIR);
 
         setupLogger();
     }
@@ -160,10 +164,10 @@ public class Main {
     }
 
     public void setupWeb() {
-        MainUtil.copyFile(FILE, "views/index.html", DIR);
-        MainUtil.copyFile(FILE, "views/upload.html", DIR);
-        MainUtil.copyFile(FILE, "views/uploadworld.html", DIR);
-        MainUtil.copyFile(FILE, "views/download.html", DIR);
+        FileUtil.copyFile(FILE, "views/index.html", DIR);
+        FileUtil.copyFile(FILE, "views/upload.html", DIR);
+        FileUtil.copyFile(FILE, "views/uploadworld.html", DIR);
+        FileUtil.copyFile(FILE, "views/download.html", DIR);
 
         // Loading web files
         final File directory = new File(DIR + File.separator + "views");

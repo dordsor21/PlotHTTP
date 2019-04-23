@@ -1,6 +1,5 @@
 package com.boydti.plothttp.object;
 
-import com.boydti.fawe.util.TaskManager;
 import com.boydti.plothttp.Main;
 import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
 import com.boydti.plothttp.util.NanoHTTPD.Response;
@@ -17,6 +16,8 @@ import com.github.intellectualsites.plotsquared.plot.object.RunnableVal;
 import com.github.intellectualsites.plotsquared.plot.object.schematic.Schematic;
 import com.github.intellectualsites.plotsquared.plot.util.MainUtil;
 import com.github.intellectualsites.plotsquared.plot.util.SchematicHandler;
+import com.github.intellectualsites.plotsquared.plot.util.StringMan;
+import com.github.intellectualsites.plotsquared.plot.util.TaskManager;
 import com.sk89q.worldedit.math.BlockVector3;
 
 import java.awt.*;
@@ -190,7 +191,7 @@ public class WebResource extends Resource {
                                 if (area != null) {
                                     final Map<String, String> files = new HashMap<String, String>();
                                     session.parseBody(files);
-                                    Plot plot = TaskManager.IMP.sync(new com.boydti.fawe.object.RunnableVal<Plot>() {
+                                    Plot plot = TaskManager.IMP.sync(new RunnableVal<Plot>() {
                                         @Override
                                         public void run(Plot o) {
                                             int currentPlots = Settings.Limit.GLOBAL ? player.getPlotCount() : player.getPlotCount(area.worldname);
@@ -199,6 +200,7 @@ public class WebResource extends Resource {
                                                 MainUtil.sendMessage(player, Captions.CANT_CLAIM_MORE_PLOTS_NUM, -diff + "");
                                                 return;
                                             }
+
                                             Auto.autoClaimFromDatabase(player, area, null, new RunnableVal<Plot>() {
                                                 @Override
                                                 public void run(Plot plot) {
@@ -269,7 +271,7 @@ public class WebResource extends Resource {
                                                             }
                                                             result.append("Your new world is located at " + plot);
                                                             if (player.isOnline()) {
-                                                                TaskManager.IMP.sync(new com.boydti.fawe.object.RunnableVal<Object>() {
+                                                                TaskManager.IMP.sync(new RunnableVal<Object>() {
                                                                     @Override
                                                                     public void run(Object o) {
                                                                         plot.teleportPlayer(player);

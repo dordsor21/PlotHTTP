@@ -1,6 +1,9 @@
 package com.boydti.plothttp;
 
-import com.boydti.fawe.config.Config;
+import com.github.intellectualsites.plotsquared.plot.config.Config;
+import com.github.intellectualsites.plotsquared.plot.config.Settings;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,29 +11,29 @@ import java.util.List;
 
 public class WebSettings extends Config {
     @Final
-    public String VERSION = null;
+    public static String VERSION = null;
 
     @Comment("The port the server is running on")
-    public int PORT = 8080;
+    public static int PORT = 8080;
     @Comment("The public web url")
-    public String WEB_IP = "http://empcraft.com";
+    public static String WEB_IP = "http://empcraft.com";
     @Comment("Log file")
-    public String LOG_FILE = "plothttp.log";
+    public static String LOG_FILE = "plothttp.log";
 
     @Create
-    public WHITELIST WHITELIST;
+    public static Whitelist WHITELIST;
     @Create
-    public CONTENT CONTENT;
+    public static Content CONTENT;
     @Create
-    public API API;
+    public static Api API;
 
-    public static class WHITELIST {
+    public static class Whitelist {
         @Comment("Whitelist specific IP addresses")
         public boolean ENABLED = true;
         public List<String> ALLOWED = new ArrayList<>(Collections.singletonList("127.0.0.1"));
     }
 
-    public static class CONTENT {
+    public static class Content {
         @Comment("Serve content to whitelisted IPs")
         public boolean SERVE = true;
         @Comment("The max file upload size in bytes")
@@ -41,8 +44,16 @@ public class WebSettings extends Config {
         public List<String> LINKS = new ArrayList<>(Arrays.asList("<a class=navlink href='https://www.spigotmc.org/resources/1177/'>Home</a>", "<a class=navlink href='https://github.com/IntellectualCrafters/PlotSquared/wiki'>Wiki</a>", "<a class=navlink href='https://github.com/IntellectualCrafters/PlotSquared/issues'>Report Issue</a>", "<a class=navlink href='https://discord.gg/ngZCzbU'>Support/Chat</a>"));
     }
 
-    public static class API {
+    public static class Api {
         @Comment("Serve the web API to whitelisted IPs")
         public boolean SERVE = true;
+    }
+
+    public static void save(File file) {
+        save(file, WebSettings.class);
+    }
+
+    public static void load(File file) {
+        load(file, WebSettings.class);
     }
 }

@@ -1,5 +1,6 @@
 package com.boydti.plothttp.util;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class PlotFileManager implements TempFileManagerFactory {
             public void clear() {
                 for (final TempFile file : PlotFileManager.this.tempFiles) {
                     try {
-                        file.delete();
+                        new File(file.getName()).deleteOnExit();
                     } catch (final Exception ignored) {
                     }
                 }

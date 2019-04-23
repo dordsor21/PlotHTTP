@@ -5,3 +5,4 @@ load: STARTUP
 softdepend: [PlotSquared]
 description: PlotSquared HTTP test
 authors: [Empire92, Citymonstret]
+api-version: 1.13
