@@ -205,8 +205,6 @@ public class WebResource extends Resource {
                                                 @Override
                                                 public void run(Plot plot) {
                                                     if (plot != null) {
-                                                        plot.setOwner(player.getUUID());
-
                                                         try {
                                                             PlotId pid = plot.getId();
                                                             File directory = new File(PlotSquared.imp().getWorldContainer(), pid.x + "," + pid.y + File.separator + "region");
@@ -270,6 +268,7 @@ public class WebResource extends Resource {
                                                                 }
                                                             }
                                                             result.append("Your new world is located at " + plot);
+                                                            plot.claim(player, false, null, false);
                                                             if (player.isOnline()) {
                                                                 TaskManager.IMP.sync(new RunnableVal<Object>() {
                                                                     @Override
