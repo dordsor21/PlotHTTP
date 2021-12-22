@@ -1,17 +1,17 @@
 package com.boydti.plothttp.object;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 
 import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
-import com.github.intellectualsites.plotsquared.json.JSONArray;
-import com.github.intellectualsites.plotsquared.json.JSONObject;
-import com.github.intellectualsites.plotsquared.plot.PlotSquared;
-import com.github.intellectualsites.plotsquared.plot.object.PlotArea;
-import com.github.intellectualsites.plotsquared.plot.util.SetupUtils;
-import com.github.intellectualsites.plotsquared.plot.util.StringMan;
+import com.plotsquared.core.PlotSquared;
+import com.plotsquared.core.plot.PlotArea;
+import com.plotsquared.core.util.StringMan;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 public class WorldResource extends Resource {
 
@@ -30,11 +30,11 @@ public class WorldResource extends Resource {
         final String id = request.ARGS.get("id");
         final Collection<PlotArea> areas;
         if (area == null) {
-            areas = new HashSet<>(PlotSquared.get().getPlotAreas());
+            areas = new HashSet<>(Arrays.asList(PlotSquared.get().getPlotAreaManager().getAllPlotAreas()));
             if (id != null) {
                 Iterator<PlotArea> iter = areas.iterator();
                 while (iter.hasNext()) {
-                    if (!StringMan.isEqual(iter.next().id, id)) {
+                    if (!StringMan.isEqual(iter.next().getId(), id)) {
                         iter.remove();
                     }
                 }
@@ -45,60 +45,60 @@ public class WorldResource extends Resource {
             if (world != null) {
                 Iterator<PlotArea> iter = areas.iterator();
                 while (iter.hasNext()) {
-                    if (!StringMan.isEqual(iter.next().worldname, world)) {
+                    if (!StringMan.isEqual(iter.next().getWorldName(), world)) {
                         iter.remove();
                     }
                 }
             }
         } else {
-            PlotArea pa = PlotSquared.get().getPlotAreaByString(area);
-            areas = pa == null ? new HashSet<PlotArea>() : Collections.singletonList(pa);
+            PlotArea pa = PlotSquared.get().getPlotAreaManager().getPlotAreaByString(area);
+            areas = pa == null ? new HashSet<>() : Collections.singletonList(pa);
         }
         if (areas.size() == 0) {
             return null;
         }
         final JSONArray worldsObj = new JSONArray();
         for (final PlotArea plotworld : areas) {
-            worldsObj.put(serializePlotArea(plotworld));
+            worldsObj.add(serializePlotArea(plotworld));
         }
-        return worldsObj.toString(1).getBytes();
+        return worldsObj.toString().getBytes();
     }
 
     public JSONObject serializePlotArea(final PlotArea pw) {
         final JSONObject obj = new JSONObject();
-        obj.put("worldname", pw.worldname);
-        final String generator = SetupUtils.manager.getGenerator(pw);
+        obj.put("worldname", pw.getWorldName());
+        final String generator = pw.getGenerator().getName();
         if (generator == null) {
             obj.put("generator", "");
         } else {
             obj.put("generator", generator);
         }
-        obj.put("terrain", pw.TERRAIN);
-        obj.put("type", pw.TYPE);
-        obj.put("economy", pw.USE_ECONOMY);
-        obj.put("price", pw.PRICES);
+        obj.put("terrain", pw.getTerrain());
+        obj.put("type", pw.getType());
+        obj.put("economy", pw.useEconomy());
+        obj.put("price", pw.getPrices());
         final JSONObject homeObj = new JSONObject();
-        if (pw.DEFAULT_HOME == null) {
+        if (pw.getDefaultHome() == null) {
             homeObj.put("default", "side");
         } else {
-            if (pw.DEFAULT_HOME.x == Integer.MAX_VALUE) {
+            if (pw.getDefaultHome().getX() == Integer.MAX_VALUE) {
                 homeObj.put("default", "center");
             } else {
-                homeObj.put("default", pw.DEFAULT_HOME.x + "," + pw.DEFAULT_HOME.z);
+                homeObj.put("default", pw.getDefaultHome().getX() + "," + pw.getDefaultHome().getZ());
             }
         }
-        homeObj.put("allow-nonmember", pw.HOME_ALLOW_NONMEMBER);
+        homeObj.put("allow-nonmember", pw.isHomeAllowNonmember());
         obj.put("home", homeObj);
-        obj.put("mob-spawning", pw.MOB_SPAWNING);
-        obj.put("allow-signs", pw.ALLOW_SIGNS);
-        obj.put("auto-merge", pw.AUTO_MERGE);
-        obj.put("flags", getArray(pw.DEFAULT_FLAGS.values()));
+        obj.put("mob-spawning", pw.isMobSpawning());
+        obj.put("allow-signs", pw.allowSigns());
+        obj.put("auto-merge", pw.isAutoMerge());
+        obj.put("flags", getArray(pw.getFlagContainer().getFlagMap().values()));
         final JSONObject spawnObj = new JSONObject();
-        spawnObj.put("breeding", pw.SPAWN_BREEDING);
-        spawnObj.put("custom", pw.SPAWN_CUSTOM);
-        spawnObj.put("custom", pw.SPAWN_EGGS);
+        spawnObj.put("breeding", pw.isSpawnBreeding());
+        spawnObj.put("custom", pw.isSpawnCustom());
+        spawnObj.put("eggs", pw.isSpawnEggs());
         obj.put("spawn", spawnObj);
-        obj.put("world-border", pw.WORLD_BORDER);
+        obj.put("world-border", pw.hasWorldBorder());
         return obj;
     }
 

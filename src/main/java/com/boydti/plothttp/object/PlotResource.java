@@ -1,18 +1,18 @@
 package com.boydti.plothttp.object;
 
+import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
+import com.plotsquared.core.PlotSquared;
+import com.plotsquared.core.location.BlockLoc;
+import com.plotsquared.core.plot.Plot;
+import com.plotsquared.core.plot.PlotCluster;
+import com.plotsquared.core.plot.PlotId;
+import com.plotsquared.core.util.query.PlotQuery;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.UUID;
-
-import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
-import com.github.intellectualsites.plotsquared.json.JSONArray;
-import com.github.intellectualsites.plotsquared.json.JSONObject;
-import com.github.intellectualsites.plotsquared.plot.PlotSquared;
-import com.github.intellectualsites.plotsquared.plot.object.BlockLoc;
-import com.github.intellectualsites.plotsquared.plot.object.Plot;
-import com.github.intellectualsites.plotsquared.plot.object.PlotCluster;
-import com.github.intellectualsites.plotsquared.plot.object.PlotId;
-import com.github.intellectualsites.plotsquared.plot.util.UUIDHandler;
 
 public class PlotResource extends Resource {
 
@@ -35,8 +35,8 @@ public class PlotResource extends Resource {
         if (idStr != null) {
             id = PlotId.fromString(idStr);
         }
-        Collection<Plot> plots = PlotSquared.get().getPlots();
-        
+        Collection<Plot> plots = PlotQuery.newQuery().allPlots().asCollection();
+
 
         if (id != null) {
             final Iterator<Plot> i = plots.iterator();
@@ -60,7 +60,7 @@ public class PlotResource extends Resource {
             final Iterator<Plot> i = plots.iterator();
             while (i.hasNext()) {
                 final Plot plot = i.next();
-                if (!plot.getArea().worldname.equals(world)) {
+                if (!plot.getArea().getWorldName().equals(world)) {
                     i.remove();
                 }
             }
@@ -73,7 +73,7 @@ public class PlotResource extends Resource {
             final Iterator<Plot> i = plots.iterator();
             while (i.hasNext()) {
                 final Plot plot = i.next();
-                if ((plot.owner == null) || !plot.owner.equals(uuid)) {
+                if ((plot.getOwner() == null) || !plot.getOwner().equals(uuid)) {
                     i.remove();
                 }
             }
@@ -184,25 +184,26 @@ public class PlotResource extends Resource {
         }
         final JSONArray plotsObj = new JSONArray();
         for (final Plot plot : plots) {
-            plotsObj.put(serializePlot(plot));
+            plotsObj.add(serializePlot(plot));
         }
-        return plotsObj.toString(1).getBytes();
+        return plotsObj.toString().getBytes();
     }
 
     public JSONObject serializePlot(final Plot plot) {
         final JSONObject obj = new JSONObject();
 
         final JSONObject id = new JSONObject();
-        id.put("x", plot.getId().x);
-        id.put("y", plot.getId().y);
+        id.put("x", plot.getId().getX());
+        id.put("y", plot.getId().getY());
         obj.put("id", id);
 
         obj.put("area", plot.getArea().toString());
-        obj.put("world", plot.getArea().worldname);
-        obj.put("ownerUUID", plot.owner);
-        obj.put("ownerName", plot.owner == null ? "" : UUIDHandler.getName(plot.owner));
-        
-        obj.put("flags", getArray(plot.getSettings().flags.values()));
+        obj.put("world", plot.getArea().getWorldName());
+        obj.put("ownerUUID", plot.getOwner().toString());
+        obj.put("ownerName", plot.getOwner() == null ? "" :
+                PlotSquared.get().getImpromptuUUIDPipeline().getImmediately(plot.getOwner()).getUsername());
+
+        obj.put("flags", getArray(plot.getFlags()));
 
         obj.put("trusted", getArray(plot.getTrusted()));
 
@@ -221,11 +222,12 @@ public class PlotResource extends Resource {
             homeObj.put("y", "");
             homeObj.put("z", "");
         } else {
-            homeObj.put("x", home.x);
-            homeObj.put("y", home.y);
-            homeObj.put("z", home.z);
+            homeObj.put("x", home.getX());
+            homeObj.put("y", home.getY());
+            homeObj.put("z", home.getZ());
         }
         obj.put("home", homeObj);
         return obj;
     }
+
 }

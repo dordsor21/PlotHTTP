@@ -1,29 +1,38 @@
 package com.boydti.plothttp.util;
 
 import com.boydti.plothttp.Main;
-import com.github.intellectualsites.plotsquared.plot.PlotSquared;
-import com.github.intellectualsites.plotsquared.plot.object.ChunkLoc;
-import com.github.intellectualsites.plotsquared.plot.object.Location;
-import com.github.intellectualsites.plotsquared.plot.object.Plot;
-import com.github.intellectualsites.plotsquared.plot.util.ChunkManager;
-import com.github.intellectualsites.plotsquared.plot.util.ReflectionUtils;
+import com.plotsquared.bukkit.util.ContentMap;
+import com.plotsquared.core.PlotSquared;
+import com.plotsquared.core.location.Location;
+import com.plotsquared.core.plot.Plot;
+import com.plotsquared.core.plot.world.SinglePlotArea;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.IntTag;
 import com.sk89q.jnbt.NBTInputStream;
 import com.sk89q.jnbt.NBTOutputStream;
 import com.sk89q.jnbt.NamedTag;
 import com.sk89q.jnbt.Tag;
+import com.sk89q.worldedit.math.BlockVector2;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bukkit.Bukkit;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class WorldUtil {
+
+    private static final Logger LOGGER = LogManager.getLogger("PlotSquared/" + ContentMap.class.getSimpleName());
+
     public static boolean save(final Plot plot, final String filename) throws Exception {
         final byte[] buffer = new byte[1024];
 
@@ -33,52 +42,63 @@ public class WorldUtil {
             System.out.print(outputFile.getParentFile().mkdirs());
             System.out.print(outputFile.createNewFile());
         }
-        
+
         // TODO FIXME calculate offset
 
         final FileOutputStream fos = new FileOutputStream(outputFile);
         final ZipOutputStream zos = new ZipOutputStream(fos);
 
-        final File dat = getDat(plot.getArea().worldname);
+        final File dat = getDat(plot.getArea().getWorldName());
         if (dat != null) {
             final ZipEntry ze = new ZipEntry("world" + File.separator + dat.getName());
             zos.putNextEntry(ze);
             NamedTag compound;
-            try (FileInputStream is = new FileInputStream(dat)) {
-                try (NBTInputStream nbtIn = new NBTInputStream(is)) {
-                    compound = nbtIn.readNamedTag();
-                }
-            }
+            try (NBTInputStream nbtIn = new NBTInputStream(new GZIPInputStream(new FileInputStream(dat)))) {
+                compound = nbtIn.readNamedTag();
 
-            Location spawn = plot.getHome();
-            CompoundTag tag = (CompoundTag) compound.getTag();
-            Map<String, Tag> map = ReflectionUtils.getMap(tag.getValue());
-            map.put("SpawnX", new IntTag(spawn.getX()));
-            map.put("SpawnY", new IntTag(spawn.getY()));
-            map.put("SpawnZ", new IntTag(spawn.getZ()));
-            
-            final OutputStream osWrapper = new OutputStream() {
-                @Override
-                public void write(int paramInt) throws IOException {
-                    zos.write(paramInt);
+                Location spawn = plot.getHomeSynchronous();
+                CompoundTag tag = (CompoundTag) compound.getTag();
+                Map<String, Tag> newMap = new HashMap<>(tag.getValue());
+                for (Map.Entry<String, Tag> entry : tag.getValue().entrySet()) {
+                    if (!entry.getKey().equals("Data")) {
+                        newMap.put(entry.getKey(), entry.getValue());
+                        continue;
+                    }
+                    Map<String, Tag> data = new HashMap<>(((CompoundTag) entry.getValue()).getValue());
+                    data.put("SpawnX", new IntTag(spawn.getX()));
+                    data.put("SpawnY", new IntTag(spawn.getY()));
+                    data.put("SpawnZ", new IntTag(spawn.getZ()));
+                    newMap.put("Data", new CompoundTag(data));
                 }
-                @Override
-                public void close() throws IOException {
-                    zos.closeEntry();
-                    super.close();
+
+                final OutputStream osWrapper = new OutputStream() {
+                    @Override
+                    public void write(int paramInt) throws IOException {
+                        zos.write(paramInt);
+                    }
+
+                    @Override
+                    public void close() throws IOException {
+                        zos.closeEntry();
+                        super.close();
+                    }
+
+                    @Override
+                    public void flush() throws IOException {
+                        zos.flush();
+                    }
+                };
+                tag = new CompoundTag(newMap);
+                try (NBTOutputStream out = new NBTOutputStream(osWrapper)) {
+                    out.writeNamedTag("", tag);
                 }
-                @Override
-                public void flush() throws IOException {
-                    zos.flush();
-                }
-            };
-            try (NBTOutputStream out = new NBTOutputStream(osWrapper)){
-                out.writeNamedTag("", tag);
+            } catch (Throwable t) {
+                t.printStackTrace();
+                throw t;
             }
         } else {
-            PlotSquared.debug("NO DAT FOUND");
+            LOGGER.debug("NO DAT FOUND");
         }
-        
 
         for (Plot current : plot.getConnectedPlots()) {
             final Location bot = current.getBottomAbs();
@@ -87,11 +107,11 @@ public class WorldUtil {
             final int brz = bot.getZ() >> 9;
             final int trx = top.getX() >> 9;
             final int trz = top.getZ() >> 9;
-            String worldName = bot.getWorld();
-            Set<ChunkLoc> files = ChunkManager.manager.getChunkChunks(worldName);
-            for (ChunkLoc mca : files) {
-                if (mca.x >= brx && mca.x <= trx && mca.z >= brz && mca.z <= trz) {
-                    final File file = getMcr(worldName, mca.x, mca.z);
+            String worldName = bot.getWorld().getName();
+            Set<BlockVector2> files = PlotSquared.platform().worldUtil().getChunkChunks(worldName);
+            for (BlockVector2 mca : files) {
+                if (mca.getX() >= brx && mca.getX() <= trx && mca.getZ() >= brz && mca.getZ() <= trz) {
+                    final File file = getMcr(worldName, mca.getX(), mca.getZ());
                     if (file != null) {
                         //final String name = "r." + (x - cx) + "." + (z - cz) + ".mca";
                         String name = file.getName();
@@ -121,7 +141,10 @@ public class WorldUtil {
     }
 
     public static File getMcr(final String world, final int x, final int z) {
-        final File file = new File(PlotSquared.imp().getWorldContainer(), world + File.separator + "region" + File.separator + "r." + x + "." + z + ".mca");
+        final File file = new File(
+                Bukkit.getWorldContainer(),
+                world + File.separator + "region" + File.separator + "r." + x + "." + z + ".mca"
+        );
         if (file.exists()) {
             return file;
         }

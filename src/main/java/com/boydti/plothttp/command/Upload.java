@@ -3,22 +3,23 @@ package com.boydti.plothttp.command;
 import com.boydti.plothttp.Main;
 import com.boydti.plothttp.object.Request;
 import com.boydti.plothttp.object.WebResource;
-import com.github.intellectualsites.plotsquared.commands.Command;
-import com.github.intellectualsites.plotsquared.commands.CommandDeclaration;
-import com.github.intellectualsites.plotsquared.plot.PlotSquared;
-import com.github.intellectualsites.plotsquared.plot.commands.CommandCategory;
-import com.github.intellectualsites.plotsquared.plot.commands.MainCommand;
-import com.github.intellectualsites.plotsquared.plot.config.Captions;
-import com.github.intellectualsites.plotsquared.plot.config.Settings;
-import com.github.intellectualsites.plotsquared.plot.object.PlotArea;
-import com.github.intellectualsites.plotsquared.plot.object.PlotMessage;
-import com.github.intellectualsites.plotsquared.plot.object.PlotPlayer;
-import com.github.intellectualsites.plotsquared.plot.object.RunnableVal2;
-import com.github.intellectualsites.plotsquared.plot.object.RunnableVal3;
-import com.github.intellectualsites.plotsquared.plot.util.MainUtil;
-import com.github.intellectualsites.plotsquared.plot.util.Permissions;
+import com.plotsquared.core.PlotSquared;
+import com.plotsquared.core.command.Command;
+import com.plotsquared.core.command.CommandCategory;
+import com.plotsquared.core.command.CommandDeclaration;
+import com.plotsquared.core.command.MainCommand;
+import com.plotsquared.core.configuration.caption.StaticCaption;
+import com.plotsquared.core.configuration.caption.TranslatableCaption;
+import com.plotsquared.core.player.PlotPlayer;
+import com.plotsquared.core.plot.PlotArea;
+import com.plotsquared.core.util.Permissions;
+import com.plotsquared.core.util.task.RunnableVal2;
+import com.plotsquared.core.util.task.RunnableVal3;
+import net.kyori.adventure.text.minimessage.Template;
+import org.bukkit.entity.Player;
 
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
 
 @CommandDeclaration(
         command = "upload",
@@ -28,22 +29,34 @@ import java.util.HashMap;
         category = CommandCategory.SCHEMATIC,
         usage = "/plot upload")
 public class Upload extends Command {
+
     public Upload() {
         super(MainCommand.getInstance(), true);
     }
 
     @Override
-    public void execute(PlotPlayer player, String[] args, RunnableVal3<Command, Runnable, Runnable> confirm, RunnableVal2<Command, CommandResult> whenDone) throws CommandException {
+    public CompletableFuture<Boolean> execute(
+            final PlotPlayer<?> player,
+            final String[] args,
+            final RunnableVal3<Command, Runnable, Runnable> confirm,
+            final RunnableVal2<Command, CommandResult> whenDone
+    ) throws CommandException {
+        final CompletableFuture<Boolean> future = new CompletableFuture<>();
         if (!Permissions.hasPermission(player, "plots.web.upload.world")) {
-            MainUtil.sendMessage(player, Captions.NO_PERMISSION, "plots.web.upload.world");
-            return;
+            player.sendMessage(
+                    TranslatableCaption.of("permission.no_permission"),
+                    Template.of("node", "plots.web.upload.world")
+            );
+            future.complete(false);
+            return future;
         }
-        PlotArea area = PlotSquared.get().getPlotArea("*", null);
+        PlotArea area = PlotSquared.get().getPlotAreaManager().getPlotArea("*", null);
         if (area == null) {
-            MainUtil.sendMessage(player, "&6World uploads are disabled!");
-            return;
+            player.sendMessage(StaticCaption.of("World uploads are disabled!"));
+            future.complete(false);
+            return future;
         }
-        MainUtil.sendMessage(player, "&6Generating link...");
+        player.sendMessage(StaticCaption.of("Generating link..."));
         final String id = WebResource.nextId();
         final String port;
         if (Main.config().PORT != 80) {
@@ -54,17 +67,14 @@ public class Upload extends Command {
         WebResource.worldUploads.put(id, player);
         String link = Main.config().WEB_IP + port + "/web?id=" + id;
 
-        if (Settings.PLATFORM.equalsIgnoreCase("bukkit")) {
-            player.sendMessage(Captions.PREFIX.s() + "Upload the world: " + link);
-        } else {
-            PlotMessage clickable = new PlotMessage().text(Captions.color(Captions.PREFIX.s() + "Upload the world: " + link)).color("$1").suggest(link);
-            clickable.send(player);
-        }
+        ((Player) player.getPlatformPlayer()).sendMessage("Upload the world: " + link);
 
         final HashMap<String, String> map = new HashMap<>();
         map.put("id", id);
         final Request r = new Request("*", "*", "/web", map, 2);
         Main.imp().getWebServer().getRequestManager().addToken(r);
-        return;
+        future.complete(true);
+        return future;
     }
+
 }

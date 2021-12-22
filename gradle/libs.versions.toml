@@ -1,0 +1,33 @@
+[versions]
+# Platform expectations
+spigot = "1.17.1-R0.1-SNAPSHOT"
+
+# Plugins
+plotsquared = "6.2.1"
+fawe = "2.0.0-SNAPSHOT"
+
+# Third party
+jsonSimple = "1.1"
+
+# Gradle plugins
+bukkityml = "0.5.0"
+shadow = "7.1.1"
+
+[libraries]
+# Platform expectations
+spigot = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }
+
+# Plugins
+plotsquared = { group = "com.plotsquared", name = "PlotSquared-Bukkit", version.ref = "plotsquared" }
+faweBukkit = { group = "com.fastasyncworldedit", name = "FastAsyncWorldEdit-Bukkit", version.ref = "fawe" }
+faweCore = { group = "com.fastasyncworldedit", name = "FastAsyncWorldEdit-Core", version.ref = "fawe" }
+
+# Third party
+jsonSimple = { group = "com.googlecode.json-simple", name = "json-simple", version.ref = "jsonSimple"}
+
+[plugins]
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+pluginyml = { id = "net.minecrell.plugin-yml.bukkit", version.ref = "bukkityml" }
+
+[bundles]
+fawe = ["faweBukkit", "faweCore"]

@@ -1,14 +1,14 @@
 package com.boydti.plothttp.object;
 
 import com.boydti.plothttp.util.NanoHTTPD;
+import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
+import com.boydti.plothttp.util.NanoHTTPD.Response;
+import com.plotsquared.core.PlotSquared;
+import org.json.simple.JSONArray;
+
 import java.io.ByteArrayInputStream;
 import java.util.Collection;
 import java.util.UUID;
-
-import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
-import com.boydti.plothttp.util.NanoHTTPD.Response;
-import com.github.intellectualsites.plotsquared.json.JSONArray;
-import com.github.intellectualsites.plotsquared.plot.util.UUIDHandler;
 
 public abstract class Resource {
 
@@ -48,7 +48,7 @@ public abstract class Resource {
     public JSONArray getArray(final Collection<?> collection) {
         final JSONArray array = new JSONArray();
         for (final Object object : collection) {
-            array.put(object.toString());
+            array.add(object.toString());
         }
         return array;
     }
@@ -56,7 +56,7 @@ public abstract class Resource {
     public JSONArray getArray(final Object[] collection) {
         final JSONArray array = new JSONArray();
         for (final Object object : collection) {
-            array.put(object.toString());
+            array.add(object.toString());
         }
         return array;
     }
@@ -65,7 +65,7 @@ public abstract class Resource {
         if (name == null) {
             return null;
         }
-        final UUID uuid = UUIDHandler.getUUID(name, null);
+        final UUID uuid = PlotSquared.get().getImpromptuUUIDPipeline().getImmediately(name).getUuid();
         if (uuid != null) {
             return uuid;
         }
@@ -75,4 +75,5 @@ public abstract class Resource {
             return null;
         }
     }
+
 }

@@ -1,6 +1,5 @@
 package com.boydti.plothttp;
 
-import com.github.intellectualsites.plotsquared.plot.util.MainUtil;
 import com.boydti.plothttp.command.Upload;
 import com.boydti.plothttp.command.Web;
 import com.boydti.plothttp.object.ClusterResource;
@@ -17,8 +16,9 @@ import com.boydti.plothttp.util.RequestManager;
 import com.boydti.plothttp.util.ResourceManager;
 import com.boydti.plothttp.util.ServerRunner;
 import com.boydti.plothttp.util.WebUtil;
-import com.github.intellectualsites.plotsquared.plot.commands.MainCommand;
-import com.github.intellectualsites.plotsquared.plot.util.TaskManager;
+import com.fastasyncworldedit.core.util.MainUtil;
+import com.plotsquared.core.command.MainCommand;
+import com.plotsquared.core.util.task.TaskManager;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -42,6 +42,13 @@ public class Main {
     private boolean commands = false;
     private Logger logger;
 
+    public Main() throws URISyntaxException, MalformedURLException {
+        IMP = this;
+        URL url = Main.class.getProtectionDomain().getCodeSource().getLocation();
+        FILE = new File(new URL(url.toURI().toString().split("\\!")[0].replaceAll("jar:file", "file")).toURI().getPath());
+        DIR = new File(FILE.getParentFile(), "PlotHTTP");
+    }
+
     public static void deleteFolder(final File folder) {
         final File[] files = folder.listFiles();
         if (files != null) { //some JVMs return null for empty dirs
@@ -64,16 +71,7 @@ public class Main {
         return IMP.settings;
     }
 
-    public Main() throws URISyntaxException, MalformedURLException {
-        IMP = this;
-        URL url = Main.class.getProtectionDomain().getCodeSource().getLocation();
-        FILE = new File(new URL(url.toURI().toString().split("\\!")[0].replaceAll("jar:file", "file")).toURI().getPath());
-        DIR = new File(FILE.getParentFile(), "PlotHTTP");
-    }
-
     public void open() {
-        System.out.println("Dir " + DIR);
-
         // Clear downloads on load
         deleteFolder(new File(DIR + File.separator + "downloads"));
 
@@ -89,22 +87,19 @@ public class Main {
         // Setup commands
         setupCommands();
 
-        TaskManager.IMP.taskAsync(new Runnable() {
-            @Override
-            public void run() {
-                server = ServerRunner.run(PlotServer.class);
-                RequestManager manager = server.getRequestManager();
-                if (config().WHITELIST.ENABLED) {
-                    for (final String ip : config().WHITELIST.ALLOWED) {
-                        final HashMap<String, String> params = new HashMap<>();
-                        params.put("*", "*");
-                        manager.addToken(new Request(ip, "*", "*", params));
-                    }
-                } else {
+        TaskManager.getPlatformImplementation().runTaskAsync(() -> {
+            server = ServerRunner.run(PlotServer.class);
+            RequestManager manager = server.getRequestManager();
+            if (config().WHITELIST.ENABLED) {
+                for (final String ip : config().WHITELIST.ALLOWED) {
                     final HashMap<String, String> params = new HashMap<>();
                     params.put("*", "*");
-                    manager.addToken(new Request("*", "*", "*", params));
+                    manager.addToken(new Request(ip, "*", "*", params));
                 }
+            } else {
+                final HashMap<String, String> params = new HashMap<>();
+                params.put("*", "*");
+                manager.addToken(new Request("*", "*", "*", params));
             }
         });
         if (!DIR.exists()) {
@@ -179,7 +174,10 @@ public class Main {
         });
         for (final File file : files) {
             try {
-                WebUtil.addPage(file.getName().substring(0, file.getName().length() - 5), new String(Files.readAllBytes(file.toPath())));
+                WebUtil.addPage(
+                        file.getName().substring(0, file.getName().length() - 5),
+                        new String(Files.readAllBytes(file.toPath()))
+                );
             } catch (final IOException e) {
                 e.printStackTrace();
             }
@@ -193,4 +191,5 @@ public class Main {
         settings.VERSION = "development";
         settings.save(config);
     }
+
 }

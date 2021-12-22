@@ -1,11 +1,11 @@
 package com.boydti.plothttp.object;
 
-import java.util.UUID;
-
 import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
-import com.github.intellectualsites.plotsquared.json.JSONArray;
-import com.github.intellectualsites.plotsquared.json.JSONObject;
-import com.github.intellectualsites.plotsquared.plot.util.UUIDHandler;
+import com.plotsquared.core.PlotSquared;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import java.util.UUID;
 
 public class UUIDResource extends Resource {
 
@@ -24,10 +24,10 @@ public class UUIDResource extends Resource {
             final UUID uuid = getUUID(arg);
             final JSONObject obj = new JSONObject();
             if (uuid != null) {
-                final String name = UUIDHandler.getName(uuid);
+                final String name = PlotSquared.get().getImpromptuUUIDPipeline().getImmediately(uuid).getUsername();
                 if (name != null) {
                     obj.put("uuid", uuid.toString());
-                    obj.put("name", name.toString());
+                    obj.put("name", name);
                 } else {
                     obj.put("uuid", uuid.toString());
                     obj.put("name", "");
@@ -37,8 +37,9 @@ public class UUIDResource extends Resource {
                 obj.put("name", arg);
             }
             obj.put("input", arg);
-            array.put(obj);
+            array.add(obj);
         }
-        return array.toString(1).getBytes();
+        return array.toString().getBytes();
     }
+
 }

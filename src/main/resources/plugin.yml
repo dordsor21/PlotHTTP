@@ -1,8 +1,0 @@
-name: PlotHTTP
-main: com.boydti.plothttp.BukkitMain
-version: 3.4.0
-load: STARTUP
-softdepend: [PlotSquared]
-description: PlotSquared HTTP test
-authors: [Empire92, Citymonstret]
-api-version: 1.13

@@ -1,6 +1,7 @@
 package com.boydti.plothttp.util;
 
 import com.boydti.plothttp.object.Request;
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,14 +16,14 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.xml.bind.DatatypeConverter;
 
 public class Logger extends DataOutputStream {
+
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
     StringBuffer buffer = new StringBuffer();
     ExecutorService executor = Executors.newSingleThreadExecutor();
     AtomicBoolean updated = new AtomicBoolean();
     AtomicBoolean waiting = new AtomicBoolean();
-    boolean lineColor = false;
 
     public Logger(File file) throws FileNotFoundException {
         this(new FileOutputStream(file, true));
@@ -48,7 +49,7 @@ public class Logger extends DataOutputStream {
                  DigestInputStream dis = new DigestInputStream(is, md)) {
             }
             byte[] digest = md.digest();
-            String hash = DatatypeConverter.printHexBinary(digest);
+            String hash = bytesToHex(digest);
 
             String msg = "User " + user + " requested file " + file.getName() + " with hash: " + hash;
             logRequest(msg, request, session);
@@ -63,6 +64,15 @@ public class Logger extends DataOutputStream {
         writeLine(msg + "\nRequest:\n - " + rStr + "\nSession:\n - " + sStr);
     }
 
+    private String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
 
     @Override
     public void write(int b) throws IOException {
@@ -100,4 +110,5 @@ public class Logger extends DataOutputStream {
         executor.shutdownNow();
         close();
     }
+
 }
