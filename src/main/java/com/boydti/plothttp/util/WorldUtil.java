@@ -1,25 +1,27 @@
 package com.boydti.plothttp.util;
 
 import com.boydti.plothttp.Main;
-import com.github.intellectualsites.plotsquared.plot.PlotSquared;
-import com.github.intellectualsites.plotsquared.plot.object.ChunkLoc;
-import com.github.intellectualsites.plotsquared.plot.object.Location;
-import com.github.intellectualsites.plotsquared.plot.object.Plot;
-import com.github.intellectualsites.plotsquared.plot.util.ChunkManager;
-import com.github.intellectualsites.plotsquared.plot.util.ReflectionUtils;
+import com.intellectualcrafters.plot.PS;
+import com.intellectualcrafters.plot.object.ChunkLoc;
+import com.intellectualcrafters.plot.object.Location;
+import com.intellectualcrafters.plot.object.Plot;
+import com.intellectualcrafters.plot.util.ChunkManager;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.IntTag;
 import com.sk89q.jnbt.NBTInputStream;
 import com.sk89q.jnbt.NBTOutputStream;
 import com.sk89q.jnbt.NamedTag;
 import com.sk89q.jnbt.Tag;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -33,7 +35,7 @@ public class WorldUtil {
             System.out.print(outputFile.getParentFile().mkdirs());
             System.out.print(outputFile.createNewFile());
         }
-        
+
         // TODO FIXME calculate offset
 
         final FileOutputStream fos = new FileOutputStream(outputFile);
@@ -44,41 +46,42 @@ public class WorldUtil {
             final ZipEntry ze = new ZipEntry("world" + File.separator + dat.getName());
             zos.putNextEntry(ze);
             NamedTag compound;
-            try (FileInputStream is = new FileInputStream(dat)) {
-                try (NBTInputStream nbtIn = new NBTInputStream(is)) {
-                    compound = nbtIn.readNamedTag();
-                }
+            try (NBTInputStream nbtIn = new NBTInputStream(new GZIPInputStream(new FileInputStream(dat)))) {
+                compound = nbtIn.readNamedTag();
             }
 
             Location spawn = plot.getHome();
             CompoundTag tag = (CompoundTag) compound.getTag();
-            Map<String, Tag> map = ReflectionUtils.getMap(tag.getValue());
+            Map<String, Tag> map = new HashMap<>(tag.getValue());
             map.put("SpawnX", new IntTag(spawn.getX()));
             map.put("SpawnY", new IntTag(spawn.getY()));
             map.put("SpawnZ", new IntTag(spawn.getZ()));
-            
+            tag = new CompoundTag(map);
+
             final OutputStream osWrapper = new OutputStream() {
                 @Override
                 public void write(int paramInt) throws IOException {
                     zos.write(paramInt);
                 }
+
                 @Override
                 public void close() throws IOException {
                     zos.closeEntry();
                     super.close();
                 }
+
                 @Override
                 public void flush() throws IOException {
                     zos.flush();
                 }
             };
-            try (NBTOutputStream out = new NBTOutputStream(osWrapper)){
+            try (NBTOutputStream out = new NBTOutputStream(osWrapper)) {
                 out.writeNamedTag("", tag);
             }
         } else {
-            PlotSquared.debug("NO DAT FOUND");
+            PS.debug("NO DAT FOUND");
         }
-        
+
 
         for (Plot current : plot.getConnectedPlots()) {
             final Location bot = current.getBottomAbs();
@@ -121,7 +124,7 @@ public class WorldUtil {
     }
 
     public static File getMcr(final String world, final int x, final int z) {
-        final File file = new File(PlotSquared.imp().getWorldContainer(), world + File.separator + "region" + File.separator + "r." + x + "." + z + ".mca");
+        final File file = new File(PS.imp().getWorldContainer(), world + File.separator + "region" + File.separator + "r." + x + "." + z + ".mca");
         if (file.exists()) {
             return file;
         }

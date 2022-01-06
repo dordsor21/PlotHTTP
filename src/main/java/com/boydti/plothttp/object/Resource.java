@@ -7,8 +7,8 @@ import java.util.UUID;
 
 import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
 import com.boydti.plothttp.util.NanoHTTPD.Response;
-import com.github.intellectualsites.plotsquared.json.JSONArray;
-import com.github.intellectualsites.plotsquared.plot.util.UUIDHandler;
+import com.intellectualcrafters.json.JSONArray;
+import com.intellectualcrafters.plot.util.UUIDHandler;
 
 public abstract class Resource {
 

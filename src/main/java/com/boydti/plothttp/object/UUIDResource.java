@@ -3,9 +3,9 @@ package com.boydti.plothttp.object;
 import java.util.UUID;
 
 import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
-import com.github.intellectualsites.plotsquared.json.JSONArray;
-import com.github.intellectualsites.plotsquared.json.JSONObject;
-import com.github.intellectualsites.plotsquared.plot.util.UUIDHandler;
+import com.intellectualcrafters.json.JSONArray;
+import com.intellectualcrafters.json.JSONObject;
+import com.intellectualcrafters.plot.util.UUIDHandler;
 
 public class UUIDResource extends Resource {
 

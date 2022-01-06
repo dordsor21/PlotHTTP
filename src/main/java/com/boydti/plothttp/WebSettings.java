@@ -1,7 +1,6 @@
 package com.boydti.plothttp;
 
-import com.github.intellectualsites.plotsquared.plot.config.Config;
-import com.github.intellectualsites.plotsquared.plot.config.Settings;
+import com.intellectualcrafters.plot.config.Config;
 
 import java.io.File;
 import java.util.ArrayList;

@@ -1,6 +1,5 @@
 package com.boydti.plothttp;
 
-import com.github.intellectualsites.plotsquared.plot.util.MainUtil;
 import com.boydti.plothttp.command.Upload;
 import com.boydti.plothttp.command.Web;
 import com.boydti.plothttp.object.ClusterResource;
@@ -17,8 +16,9 @@ import com.boydti.plothttp.util.RequestManager;
 import com.boydti.plothttp.util.ResourceManager;
 import com.boydti.plothttp.util.ServerRunner;
 import com.boydti.plothttp.util.WebUtil;
-import com.github.intellectualsites.plotsquared.plot.commands.MainCommand;
-import com.github.intellectualsites.plotsquared.plot.util.TaskManager;
+import com.intellectualcrafters.plot.commands.MainCommand;
+import com.intellectualcrafters.plot.util.MainUtil;
+import com.intellectualcrafters.plot.util.TaskManager;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -42,6 +42,13 @@ public class Main {
     private boolean commands = false;
     private Logger logger;
 
+    public Main() throws URISyntaxException, MalformedURLException {
+        IMP = this;
+        URL url = Main.class.getProtectionDomain().getCodeSource().getLocation();
+        FILE = new File(new URL(url.toURI().toString().split("\\!")[0].replaceAll("jar:file", "file")).toURI().getPath());
+        DIR = new File(FILE.getParentFile(), "PlotHTTP");
+    }
+
     public static void deleteFolder(final File folder) {
         final File[] files = folder.listFiles();
         if (files != null) { //some JVMs return null for empty dirs
@@ -62,13 +69,6 @@ public class Main {
 
     public static WebSettings config() {
         return IMP.settings;
-    }
-
-    public Main() throws URISyntaxException, MalformedURLException {
-        IMP = this;
-        URL url = Main.class.getProtectionDomain().getCodeSource().getLocation();
-        FILE = new File(new URL(url.toURI().toString().split("\\!")[0].replaceAll("jar:file", "file")).toURI().getPath());
-        DIR = new File(FILE.getParentFile(), "PlotHTTP");
     }
 
     public void open() {
@@ -148,7 +148,7 @@ public class Main {
             return;
         }
         this.commands = true;
-        MainCommand.getInstance().register(new Web());
+        MainCommand.getInstance().addCommand(new Web());
         MainCommand.getInstance().register(new Upload());
     }
 

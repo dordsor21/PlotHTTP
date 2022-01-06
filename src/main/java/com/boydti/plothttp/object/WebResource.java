@@ -4,23 +4,21 @@ import com.boydti.plothttp.Main;
 import com.boydti.plothttp.util.NanoHTTPD.IHTTPSession;
 import com.boydti.plothttp.util.NanoHTTPD.Response;
 import com.boydti.plothttp.util.WebUtil;
-import com.github.intellectualsites.plotsquared.plot.PlotSquared;
-import com.github.intellectualsites.plotsquared.plot.commands.Auto;
-import com.github.intellectualsites.plotsquared.plot.config.Captions;
-import com.github.intellectualsites.plotsquared.plot.config.Settings;
-import com.github.intellectualsites.plotsquared.plot.object.Plot;
-import com.github.intellectualsites.plotsquared.plot.object.PlotArea;
-import com.github.intellectualsites.plotsquared.plot.object.PlotId;
-import com.github.intellectualsites.plotsquared.plot.object.PlotPlayer;
-import com.github.intellectualsites.plotsquared.plot.object.RunnableVal;
-import com.github.intellectualsites.plotsquared.plot.object.schematic.Schematic;
-import com.github.intellectualsites.plotsquared.plot.util.MainUtil;
-import com.github.intellectualsites.plotsquared.plot.util.SchematicHandler;
-import com.github.intellectualsites.plotsquared.plot.util.StringMan;
-import com.github.intellectualsites.plotsquared.plot.util.TaskManager;
-import com.sk89q.worldedit.math.BlockVector3;
+import com.intellectualcrafters.plot.PS;
+import com.intellectualcrafters.plot.commands.Auto;
+import com.intellectualcrafters.plot.config.C;
+import com.intellectualcrafters.plot.config.Settings;
+import com.intellectualcrafters.plot.object.Plot;
+import com.intellectualcrafters.plot.object.PlotArea;
+import com.intellectualcrafters.plot.object.PlotId;
+import com.intellectualcrafters.plot.object.PlotPlayer;
+import com.intellectualcrafters.plot.object.RunnableVal;
+import com.intellectualcrafters.plot.util.MainUtil;
+import com.intellectualcrafters.plot.util.SchematicHandler;
+import com.intellectualcrafters.plot.util.SchematicHandler.Dimension;
+import com.intellectualcrafters.plot.util.SchematicHandler.Schematic;
+import com.intellectualcrafters.plot.util.TaskManager;
 
-import java.awt.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -40,23 +38,20 @@ import java.util.zip.ZipInputStream;
 
 public class WebResource extends Resource {
 
-    // TODO this will be an interactive webpage
-    private static SecureRandom random = new SecureRandom();
-
     // File pointers
     public static HashMap<String, String> downloads = new HashMap<>();
     public static HashMap<String, UUID> downloadsUUID = new HashMap<>();
-
     // Plot pointers
     public static HashMap<String, Plot> uploads = new HashMap<>();
     public static HashMap<String, PlotPlayer> worldUploads = new HashMap<>();
+    // TODO this will be an interactive webpage
+    private static SecureRandom random = new SecureRandom();
+    private static boolean isDownload = false;
+    private static String filename = "plots.schematic";
 
     public static String nextId() {
         return new BigInteger(130, random).toString(32);
     }
-
-    private static boolean isDownload = false;
-    private static String filename = "plots.schematic";
 
     @Override
     public String toString() {
@@ -133,18 +128,12 @@ public class WebResource extends Resource {
                         } catch (final Exception e) {
                             e.printStackTrace();
                         }
-                        final Schematic schem;
-                        try {
-                            schem = SchematicHandler.manager.getSchematic(new File(directory));
-                        } catch (SchematicHandler.UnsupportedFormatException e) {
-                            e.printStackTrace();
-                            return e.getMessage().getBytes();
-                        }
+                        final Schematic schem = SchematicHandler.manager.getSchematic(new File(directory));
                         if (schem == null) {
                             return "Invalid schematic file".getBytes();
                         }
                         final int length2 = upload.getTop().getX() - upload.getBottom().getX() + 1;
-                        final BlockVector3 dem = schem.getClipboard().getDimensions();
+                        final Dimension dem = schem.getSchematicDimension();
                         if ((dem.getX() > length2) || (dem.getZ() > length2)) {
                             return "Invalid dimensions".getBytes();
                         }
@@ -187,7 +176,7 @@ public class WebResource extends Resource {
                         worldUploads.remove(id);
                         if (player.isOnline()) {
                             try {
-                                PlotArea area = PlotSquared.get().getPlotArea("*", null);
+                                PlotArea area = PS.get().getPlotArea("*", null);
                                 if (area != null) {
                                     final Map<String, String> files = new HashMap<String, String>();
                                     session.parseBody(files);
@@ -197,7 +186,7 @@ public class WebResource extends Resource {
                                             int currentPlots = Settings.Limit.GLOBAL ? player.getPlotCount() : player.getPlotCount(area.worldname);
                                             int diff = player.getAllowedPlots() - currentPlots;
                                             if (diff < 1) {
-                                                MainUtil.sendMessage(player, Captions.CANT_CLAIM_MORE_PLOTS_NUM, -diff + "");
+                                                MainUtil.sendMessage(player, C.CANT_CLAIM_MORE_PLOTS_NUM, -diff + "");
                                                 return;
                                             }
 
@@ -207,7 +196,7 @@ public class WebResource extends Resource {
                                                     if (plot != null) {
                                                         try {
                                                             PlotId pid = plot.getId();
-                                                            File directory = new File(PlotSquared.imp().getWorldContainer(), pid.x + "," + pid.y + File.separator + "region");
+                                                            File directory = new File(PS.imp().getWorldContainer(), pid.x + "," + pid.y + File.separator + "region");
                                                             if (!directory.exists()) {
                                                                 directory.mkdirs();
                                                             }
@@ -282,8 +271,8 @@ public class WebResource extends Resource {
                                                         } catch (IOException e) {
                                                             e.printStackTrace();
                                                         }
-                                                        MainUtil.sendMessage(player, Captions.NO_FREE_PLOTS);
-                                                        result.append(Captions.NO_FREE_PLOTS.s());
+                                                        MainUtil.sendMessage(player, C.NO_FREE_PLOTS);
+                                                        result.append(C.NO_FREE_PLOTS.s());
                                                     }
                                                 }
                                             });
@@ -311,7 +300,6 @@ public class WebResource extends Resource {
                 }
             }
         }
-
 
 
         result.append(WebUtil.getPage(page));
