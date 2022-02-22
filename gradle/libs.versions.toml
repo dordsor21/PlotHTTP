@@ -3,7 +3,7 @@
 spigot = "1.17.1-R0.1-SNAPSHOT"
 
 # Plugins
-plotsquared = "6.2.1"
+plotsquared = "6.5.0"
 fawe = "2.0.0-SNAPSHOT"
 
 # Third party

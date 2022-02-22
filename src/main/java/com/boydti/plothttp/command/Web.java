@@ -21,7 +21,7 @@ import com.plotsquared.core.util.Permissions;
 import com.plotsquared.core.util.StringMan;
 import com.plotsquared.core.util.task.TaskManager;
 import com.plotsquared.core.util.task.TaskTime;
-import net.kyori.adventure.text.minimessage.Template;
+import com.plotsquared.core.configuration.adventure.text.minimessage.Template;
 import org.bukkit.entity.Player;
 
 import java.io.File;

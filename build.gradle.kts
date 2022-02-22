@@ -23,14 +23,15 @@ repositories {
     maven { url = uri("https://repo.dmulloy2.net/nexus/repository/public/") }
     maven { url = uri("https://jitpack.io") }
     maven { url = uri("https://maven.enginehub.org/repo/") }
-    maven { url = uri("https://mvn.intellectualsites.com/content/groups/public/") }
     maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
 }
 
 dependencies {
     compileOnly(libs.spigot)
     compileOnly(libs.bundles.fawe)
-    compileOnly(libs.plotsquared)
+    compileOnly(libs.plotsquared) {
+        exclude(group = "worldedit-core")
+    }
     compileOnly(libs.jsonSimple)
 }
 

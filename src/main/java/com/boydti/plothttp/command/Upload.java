@@ -15,7 +15,7 @@ import com.plotsquared.core.plot.PlotArea;
 import com.plotsquared.core.util.Permissions;
 import com.plotsquared.core.util.task.RunnableVal2;
 import com.plotsquared.core.util.task.RunnableVal3;
-import net.kyori.adventure.text.minimessage.Template;
+import com.plotsquared.core.configuration.adventure.text.minimessage.Template;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
