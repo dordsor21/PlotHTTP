@@ -11,6 +11,7 @@ import com.sk89q.jnbt.IntTag;
 import com.sk89q.jnbt.NBTInputStream;
 import com.sk89q.jnbt.NBTOutputStream;
 import com.sk89q.jnbt.NamedTag;
+import com.sk89q.jnbt.StringTag;
 import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.math.BlockVector2;
 import org.apache.logging.log4j.LogManager;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -36,12 +38,8 @@ public class WorldUtil {
     public static boolean save(final Plot plot, final String filename) throws Exception {
         final byte[] buffer = new byte[1024];
 
-        final String output = Main.imp().DIR + File.separator + "downloads" + File.separator + filename;
+        final String output = Main.imp().DIR + File.separator + "downloads" + File.separator + filename + ".zip";
         final File outputFile = new File(output);
-        if (!outputFile.exists()) {
-            System.out.print(outputFile.getParentFile().mkdirs());
-            System.out.print(outputFile.createNewFile());
-        }
 
         // TODO FIXME calculate offset
 
@@ -50,7 +48,7 @@ public class WorldUtil {
 
         final File dat = getDat(plot.getArea().getWorldName());
         if (dat != null) {
-            final ZipEntry ze = new ZipEntry("world" + File.separator + dat.getName());
+            final ZipEntry ze = new ZipEntry(dat.getName());
             zos.putNextEntry(ze);
             NamedTag compound;
             try (NBTInputStream nbtIn = new NBTInputStream(new GZIPInputStream(new FileInputStream(dat)))) {
@@ -61,13 +59,13 @@ public class WorldUtil {
                 Map<String, Tag> newMap = new HashMap<>(tag.getValue());
                 for (Map.Entry<String, Tag> entry : tag.getValue().entrySet()) {
                     if (!entry.getKey().equals("Data")) {
-                        newMap.put(entry.getKey(), entry.getValue());
                         continue;
                     }
                     Map<String, Tag> data = new HashMap<>(((CompoundTag) entry.getValue()).getValue());
                     data.put("SpawnX", new IntTag(spawn.getX()));
                     data.put("SpawnY", new IntTag(spawn.getY()));
                     data.put("SpawnZ", new IntTag(spawn.getZ()));
+                    data.put("LevelName", new StringTag(filename));
                     newMap.put("Data", new CompoundTag(data));
                 }
 
@@ -89,7 +87,7 @@ public class WorldUtil {
                     }
                 };
                 tag = new CompoundTag(newMap);
-                try (NBTOutputStream out = new NBTOutputStream(osWrapper)) {
+                try (NBTOutputStream out = new NBTOutputStream(new GZIPOutputStream(osWrapper))) {
                     out.writeNamedTag("", tag);
                 }
             } catch (Throwable t) {
@@ -115,7 +113,7 @@ public class WorldUtil {
                     if (file != null) {
                         //final String name = "r." + (x - cx) + "." + (z - cz) + ".mca";
                         String name = file.getName();
-                        final ZipEntry ze = new ZipEntry("world" + File.separator + "region" + File.separator + name);
+                        final ZipEntry ze = new ZipEntry("region" + File.separator + name);
                         zos.putNextEntry(ze);
                         final FileInputStream in = new FileInputStream(file);
                         int len;

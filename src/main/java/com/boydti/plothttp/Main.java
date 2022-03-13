@@ -73,7 +73,9 @@ public class Main {
 
     public void open() {
         // Clear downloads on load
-        deleteFolder(new File(DIR + File.separator + "downloads"));
+        File downloads = new File(DIR + File.separator + "downloads");
+        deleteFolder(downloads);
+        downloads.mkdir();
 
         // Setting up configuration
         setupConfig();

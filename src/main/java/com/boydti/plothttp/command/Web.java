@@ -250,7 +250,7 @@ public class Web extends SubCommand {
                                             : plot.getArea().getWorldName();
                                     final String filename = plot.getId().getX() + "," + plot
                                             .getId()
-                                            .getY() + "," + worldName + "," + owner + ".zip";
+                                            .getY() + "," + worldName + "," + owner;
                                     PlotSquared.platform().worldUtil().saveWorld(worldName);
                                     boolean result;
                                     try {
@@ -262,7 +262,7 @@ public class Web extends SubCommand {
                                     if (result) {
                                         player.sendMessage(StaticCaption.of(
                                                 "Generating link... (this will take up to 10 seconds)"));
-                                        WebResource.downloads.put(id, filename);
+                                        WebResource.downloads.put(id, filename + ".zip");
                                         WebResource.downloadsUUID.put(id, player.getUUID());
                                         TaskManager.runTaskLater(() -> {
                                             player.sendMessage(
