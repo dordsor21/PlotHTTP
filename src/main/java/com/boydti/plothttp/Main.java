@@ -72,10 +72,11 @@ public class Main {
     }
 
     public void open() {
-        System.out.println("Dir " + DIR);
 
+        File downloads = new File(DIR + File.separator + "downloads");
         // Clear downloads on load
-        deleteFolder(new File(DIR + File.separator + "downloads"));
+        deleteFolder(downloads);
+        downloads.mkdir();
 
         // Setting up configuration
         setupConfig();
@@ -89,22 +90,19 @@ public class Main {
         // Setup commands
         setupCommands();
 
-        TaskManager.IMP.taskAsync(new Runnable() {
-            @Override
-            public void run() {
-                server = ServerRunner.run(PlotServer.class);
-                RequestManager manager = server.getRequestManager();
-                if (config().WHITELIST.ENABLED) {
-                    for (final String ip : config().WHITELIST.ALLOWED) {
-                        final HashMap<String, String> params = new HashMap<>();
-                        params.put("*", "*");
-                        manager.addToken(new Request(ip, "*", "*", params));
-                    }
-                } else {
+        TaskManager.IMP.taskAsync(() -> {
+            server = ServerRunner.run(PlotServer.class);
+            RequestManager manager = server.getRequestManager();
+            if (config().WHITELIST.ENABLED) {
+                for (final String ip : config().WHITELIST.ALLOWED) {
                     final HashMap<String, String> params = new HashMap<>();
                     params.put("*", "*");
-                    manager.addToken(new Request("*", "*", "*", params));
+                    manager.addToken(new Request(ip, "*", "*", params));
                 }
+            } else {
+                final HashMap<String, String> params = new HashMap<>();
+                params.put("*", "*");
+                manager.addToken(new Request("*", "*", "*", params));
             }
         });
         if (!DIR.exists()) {
@@ -171,12 +169,7 @@ public class Main {
 
         // Loading web files
         final File directory = new File(DIR + File.separator + "views");
-        final File[] files = directory.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(final File dir, final String name) {
-                return name.toLowerCase().endsWith(".html");
-            }
-        });
+        final File[] files = directory.listFiles((dir, name) -> name.toLowerCase().endsWith(".html"));
         for (final File file : files) {
             try {
                 WebUtil.addPage(file.getName().substring(0, file.getName().length() - 5), new String(Files.readAllBytes(file.toPath())));

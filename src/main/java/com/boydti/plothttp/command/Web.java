@@ -206,7 +206,7 @@ public class Web extends SubCommand {
                             MainUtil.sendMessage(player, "&7(invalid owner) Could not export &c" + plot.getId());
                         }
                         String worldName = (plot.getArea() instanceof SinglePlotArea) ? plot.getId().toString().replace(';', ',') : plot.getArea().worldname;
-                        final String filename = plot.getId().x + "," + plot.getId().y + "," + worldName + "," + owner + ".zip";
+                        final String filename = plot.getId().x + "," + plot.getId().y + "," + worldName + "," + owner;
                         com.intellectualcrafters.plot.util.WorldUtil.IMP.saveWorld(worldName);
                         boolean result;
                         try {
@@ -217,7 +217,7 @@ public class Web extends SubCommand {
                         }
                         if (result) {
                             MainUtil.sendMessage(player, "&6Generating link... (this will take 10 seconds)");
-                            WebResource.downloads.put(id, filename);
+                            WebResource.downloads.put(id, filename + ".zip");
                             WebResource.downloadsUUID.put(id, player.getUUID());
                             TaskManager.runTaskLater(new Runnable() {
                                 @Override
