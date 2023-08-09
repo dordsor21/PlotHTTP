@@ -16,22 +16,26 @@ the<JavaPluginExtension>().toolchain {
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://ci.athion.net/plugin/repository/tools/") }
     maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
     maven { url = uri("https://repo.codemc.io/repository/maven-public/") }
-    maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
+    maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
     maven { url = uri("https://repo.dmulloy2.net/nexus/repository/public/") }
     maven { url = uri("https://jitpack.io") }
     maven { url = uri("https://maven.enginehub.org/repo/") }
     maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
+    maven { url = uri("https://s01.oss.sonatype.org/") }
 }
 
 dependencies {
+    compileOnly(group = "com.intellectualsites.informative-annotations", name = "informative-annotations")
     compileOnly(libs.spigot)
     compileOnly(libs.bundles.fawe)
     compileOnly(libs.plotsquared) {
         exclude(group = "worldedit-core")
+        isTransitive = false
     }
+    compileOnly(libs.plotsquaredCore)
+    compileOnly(libs.bom)
     compileOnly(libs.jsonSimple)
 }
 
@@ -39,7 +43,7 @@ bukkit {
     name = "PlotHTTP"
     main = "com.boydti.plothttp.BukkitMain"
     authors = listOf("Empire92", "dordsor21")
-    apiVersion = "1.17"
+    apiVersion = "1.20"
     description = "Plot HTTP Downloading"
     version = rootProject.version.toString()
     depend = listOf("PlotSquared")

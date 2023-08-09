@@ -65,7 +65,7 @@ public abstract class Resource {
         if (name == null) {
             return null;
         }
-        final UUID uuid = PlotSquared.get().getImpromptuUUIDPipeline().getImmediately(name).getUuid();
+        final UUID uuid = PlotSquared.get().getImpromptuUUIDPipeline().getImmediately(name).uuid();
         if (uuid != null) {
             return uuid;
         }

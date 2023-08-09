@@ -12,10 +12,11 @@ import com.plotsquared.core.configuration.caption.StaticCaption;
 import com.plotsquared.core.configuration.caption.TranslatableCaption;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.PlotArea;
-import com.plotsquared.core.util.Permissions;
 import com.plotsquared.core.util.task.RunnableVal2;
 import com.plotsquared.core.util.task.RunnableVal3;
-import com.plotsquared.core.configuration.adventure.text.minimessage.Template;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -42,10 +43,10 @@ public class Upload extends Command {
             final RunnableVal2<Command, CommandResult> whenDone
     ) throws CommandException {
         final CompletableFuture<Boolean> future = new CompletableFuture<>();
-        if (!Permissions.hasPermission(player, "plots.web.upload.world")) {
+        if (!player.hasPermission("plots.web.upload.world")) {
             player.sendMessage(
                     TranslatableCaption.of("permission.no_permission"),
-                    Template.of("node", "plots.web.upload.world")
+                    TagResolver.resolver("node", Tag.inserting(Component.text("plots.web.upload.world")))
             );
             future.complete(false);
             return future;

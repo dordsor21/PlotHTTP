@@ -78,13 +78,13 @@ public class WorldResource extends Resource {
         obj.put("economy", pw.useEconomy());
         obj.put("price", pw.getPrices());
         final JSONObject homeObj = new JSONObject();
-        if (pw.getDefaultHome() == null) {
+        if (pw.defaultHome() == null) {
             homeObj.put("default", "side");
         } else {
-            if (pw.getDefaultHome().getX() == Integer.MAX_VALUE) {
+            if (pw.defaultHome().getX() == Integer.MAX_VALUE) {
                 homeObj.put("default", "center");
             } else {
-                homeObj.put("default", pw.getDefaultHome().getX() + "," + pw.getDefaultHome().getZ());
+                homeObj.put("default", pw.defaultHome().getX() + "," + pw.defaultHome().getZ());
             }
         }
         homeObj.put("allow-nonmember", pw.isHomeAllowNonmember());

@@ -7,7 +7,6 @@ import com.boydti.plothttp.util.WebUtil;
 import com.plotsquared.core.PlotAPI;
 import com.plotsquared.core.PlotSquared;
 import com.plotsquared.core.configuration.Settings;
-import com.plotsquared.core.configuration.adventure.text.minimessage.Template;
 import com.plotsquared.core.configuration.caption.LocaleHolder;
 import com.plotsquared.core.configuration.caption.StaticCaption;
 import com.plotsquared.core.configuration.caption.TranslatableCaption;
@@ -16,11 +15,15 @@ import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
 import com.plotsquared.core.plot.PlotId;
 import com.plotsquared.core.plot.schematic.Schematic;
+import com.plotsquared.core.services.plots.AutoQuery;
 import com.plotsquared.core.services.plots.AutoService;
 import com.plotsquared.core.util.SchematicHandler;
 import com.plotsquared.core.util.task.RunnableVal;
 import com.plotsquared.core.util.task.TaskManager;
 import com.sk89q.worldedit.math.BlockVector3;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -214,13 +217,13 @@ public class WebResource extends Resource {
                             if (diff < 1) {
                                 player.sendMessage(
                                         TranslatableCaption.of("permission.cant_claim_more_plots"),
-                                        Template.of("amount", String.valueOf(player.getAllowedPlots()))
+                                        TagResolver.resolver("amount", Tag.inserting(Component.text(player.getAllowedPlots())))
                                 );
                                 return null;
                             }
 
                             Plot plot =
-                                    new AutoService.SinglePlotService().handle(new AutoService.AutoQuery(
+                                    new AutoService.SinglePlotService().handle(new AutoQuery(
                                             player,
                                             null,
                                             1,
@@ -315,7 +318,7 @@ public class WebResource extends Resource {
                                     }
                                 }
                                 result.append("Your new world is located at " + plot);
-                                plot.claim(player, false, null, false);
+                                plot.claim(player, false, null, false, false);
                                 if (!((Player) player.getPlatformPlayer()).isOnline()) {
                                     plot.teleportPlayer(player, null);
                                 }

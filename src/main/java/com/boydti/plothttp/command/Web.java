@@ -17,11 +17,12 @@ import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
 import com.plotsquared.core.plot.world.SinglePlotArea;
-import com.plotsquared.core.util.Permissions;
 import com.plotsquared.core.util.StringMan;
 import com.plotsquared.core.util.task.TaskManager;
 import com.plotsquared.core.util.task.TaskTime;
-import com.plotsquared.core.configuration.adventure.text.minimessage.Template;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.entity.Player;
 
 import java.io.File;
@@ -60,29 +61,29 @@ public class Web extends SubCommand {
 
     public void noargs(final PlotPlayer player) {
         final ArrayList<String> args = new ArrayList<String>();
-        if (Permissions.hasPermission(player, "plots.web.reload")) {
+        if (player.hasPermission("plots.web.reload")) {
             args.add("reload");
         }
-        if (Permissions.hasPermission(player, "plots.web.download")) {
+        if (player.hasPermission("plots.web.download")) {
             args.add("download");
         }
-        if (Permissions.hasPermission(player, "plots.web.upload")) {
+        if (player.hasPermission("plots.web.upload")) {
             args.add("upload");
         }
         if (args.size() == 0) {
             player.sendMessage(
                     TranslatableCaption.of("permission.no_permission"),
-                    Template.of("node", "plots.web.reload")
+                    TagResolver.resolver("node", Tag.inserting(Component.text("plots.web.reload")))
             );
             return;
         }
         player.sendMessage(
                 TranslatableCaption.of("permission.no_permission"),
-                Template.of("node", "plots.web.reload")
+                TagResolver.resolver("node", Tag.inserting(Component.text("plots.web.reload")))
         );
         player.sendMessage(
                 TranslatableCaption.of("commandconfig.command_syntax"),
-                Template.of("value", "/plot web <" + StringMan.join(args, "|") + ">")
+                TagResolver.resolver("value", Tag.inserting(Component.text("/plot web <" + StringMan.join(args, "|") + ">")))
         );
     }
 
@@ -94,10 +95,10 @@ public class Web extends SubCommand {
         }
         switch (args[0]) {
             case "reload": {
-                if (!Permissions.hasPermission(player, "plots.web.reload")) {
+                if (!player.hasPermission("plots.web.reload")) {
                     player.sendMessage(
                             TranslatableCaption.of("permission.no_permission"),
-                            Template.of("node", "plots.web.reload")
+                            TagResolver.resolver("node", Tag.inserting(Component.text("plots.web.reload")))
                     );
                     return false;
                 }
@@ -107,17 +108,20 @@ public class Web extends SubCommand {
                 return true;
             }
             case "download": {
-                if (!Permissions.hasPermission(player, "plots.web.download")) {
+                if (!player.hasPermission("plots.web.download")) {
                     player.sendMessage(
                             TranslatableCaption.of("permission.no_permission"),
-                            Template.of("node", "plots.web.download")
+                            TagResolver.resolver("node", Tag.inserting(Component.text("plots.web.download")))
                     );
                     return false;
                 }
                 if (args.length < 2) {
                     player.sendMessage(
                             TranslatableCaption.of("commandconfig.command_syntax"),
-                            Template.of("value", "/plot web download <schematic|world|worldedit>")
+                            TagResolver.resolver(
+                                    "node",
+                                    Tag.inserting(Component.text("/plot web download <schematic|world|worldedit>"))
+                            )
                     );
                     return false;
                 }
@@ -130,10 +134,7 @@ public class Web extends SubCommand {
                     case "world":
                     case "schematic": {
                         plot = player.getCurrentPlot();
-                        if ((plot == null) || (!plot.isAdded(player.getUUID()) && !Permissions.hasPermission(
-                                player,
-                                "plots.web.download.other"
-                        ))) {
+                        if ((plot == null) || (!plot.isAdded(player.getUUID()) && !player.hasPermission("plots.web.download.other"))) {
                             player.sendMessage(
                                     TranslatableCaption.of("permission.no_plot_perms")
                             );
@@ -144,7 +145,10 @@ public class Web extends SubCommand {
                     default: {
                         player.sendMessage(
                                 TranslatableCaption.of("commandconfig.command_syntax"),
-                                Template.of("value", "/plot web download <schematic|world|worldedit>")
+                                TagResolver.resolver(
+                                        "value",
+                                        Tag.inserting(Component.text("/plot web download " + "<schematic|world|worldedit>"))
+                                )
                         );
                         return false;
                     }
@@ -166,20 +170,23 @@ public class Web extends SubCommand {
                 } else {
                     port = "";
                 }
-                if (!Permissions.hasPermission(player, "plots.web.download." + args[1].toLowerCase())) {
+                if (!player.hasPermission("plots.web.download." + args[1].toLowerCase())) {
                     player.sendMessage(
                             TranslatableCaption.of("permission.no_permission"),
-                            Template.of("node", "plots.web.download." + args[1].toLowerCase())
+                            TagResolver.resolver(
+                                    "node",
+                                    Tag.inserting(Component.text("plots.web.download." + args[1].toLowerCase()))
+                            )
                     );
                     return false;
                 }
                 player.sendMessage(StaticCaption.of("Please wait while we process your plot..."));
                 switch (args[1].toLowerCase()) {
                     case "worldedit": {
-                        if (!Permissions.hasPermission(player, "plots.web.download.worldedit")) {
+                        if (!player.hasPermission("plots.web.download.worldedit")) {
                             player.sendMessage(
                                     TranslatableCaption.of("permission.no_permission"),
-                                    Template.of("node", "plots.web.download.worldedit")
+                                    TagResolver.resolver("node", Tag.inserting(Component.text("plots.web.download.worldedit")))
                             );
                             return false;
                         }
@@ -220,7 +227,9 @@ public class Web extends SubCommand {
                             WebResource.downloadsUUID.put(id, player.getUUID());
                             player.sendMessage(
                                     TranslatableCaption.of("web.generation_link_success_legacy_world"),
-                                    Template.of("url", Main.config().WEB_IP + port + "/web?id" + "=" + id)
+                                    TagResolver.builder()
+                                            .tag("url", Tag.preProcessParsed(
+                                                    Main.config().WEB_IP + port + "/web?id" + "=" + id)).build()
                             );
                             final HashMap<String, String> map = new HashMap<>();
                             map.put("id", id);
@@ -231,10 +240,10 @@ public class Web extends SubCommand {
                         return true;
                     }
                     case "world": {
-                        if (!Permissions.hasPermission(player, "plots.web.download.world")) {
+                        if (!player.hasPermission("plots.web.download.world")) {
                             player.sendMessage(
                                     TranslatableCaption.of("permission.no_permission"),
-                                    Template.of("node", "plots.web.download.world")
+                                    TagResolver.resolver("node", Tag.inserting(Component.text("plots.web.download.world")))
                             );
                             return false;
                         }
@@ -267,7 +276,9 @@ public class Web extends SubCommand {
                                         TaskManager.runTaskLater(() -> {
                                             player.sendMessage(
                                                     TranslatableCaption.of("web.generation_link_success_legacy_world"),
-                                                    Template.of("url", Main.config().WEB_IP + port + "/web?id" + "=" + id)
+                                                    TagResolver.builder()
+                                                            .tag("url", Tag.preProcessParsed(
+                                                                    Main.config().WEB_IP + port + "/web?id" + "=" + id)).build()
                                             );
                                             final HashMap<String, String> map = new HashMap<>();
                                             map.put("id", id);
@@ -283,10 +294,10 @@ public class Web extends SubCommand {
                         return true;
                     }
                     case "schematic": {
-                        if (!Permissions.hasPermission(player, "plots.web.download.schematic")) {
+                        if (!player.hasPermission("plots.web.download.schematic")) {
                             player.sendMessage(
                                     TranslatableCaption.of("permission.no_permission"),
-                                    Template.of("node", "plots.web.download.schematic")
+                                    TagResolver.resolver("node", Tag.inserting(Component.text("plots.web.download.schematic")))
                             );
                             return false;
                         }
@@ -319,10 +330,9 @@ public class Web extends SubCommand {
                                                     WebResource.downloadsUUID.put(id, player.getUUID());
                                                     player.sendMessage(
                                                             TranslatableCaption.of("web.generation_link_success_legacy_world"),
-                                                            Template.of(
-                                                                    "url",
-                                                                    Main.config().WEB_IP + port + "/web?id" + "=" + id
-                                                            )
+                                                            TagResolver.builder()
+                                                                    .tag("url", Tag.preProcessParsed(
+                                                                    Main.config().WEB_IP + port + "/web?id" + "=" + id)).build()
                                                     );
                                                     final HashMap<String, String> map = new HashMap<>();
                                                     map.put("id", id);
@@ -339,33 +349,31 @@ public class Web extends SubCommand {
                 return true;
             }
             case "upload": {
-                if (!Permissions.hasPermission(player, "plots.web.upload")) {
+                if (!player.hasPermission("plots.web.upload")) {
                     player.sendMessage(
                             TranslatableCaption.of("permission.no_permission"),
-                            Template.of("node", "plots.web.upload")
+                            TagResolver.resolver("node", Tag.inserting(Component.text("plots.web.upload")))
                     );
                     return false;
                 }
                 if (args.length < 2) {
                     player.sendMessage(
                             TranslatableCaption.of("commandconfig.command_syntax"),
-                            Template.of("value", "/plot web download <schematic|world>")
+                            TagResolver.resolver("value", Tag.inserting(Component.text("/plot web download <schematic|world>")))
                     );
                     return false;
                 }
                 switch (args[1].toLowerCase()) {
                     case "schematic": {
-                        if (!Permissions.hasPermission(player, "plots.web.upload.schematic")) {
+                        if (!player.hasPermission("plots.web.upload.schematic")) {
                             player.sendMessage(
                                     TranslatableCaption.of("permission.no_permission"),
-                                    Template.of("node", "plots.web.upload.schematic")
+                                    TagResolver.resolver("node", Tag.inserting(Component.text("plots.web.upload.schematic")))
                             );
                             return false;
                         }
                         final Plot plot = player.getCurrentPlot();
-                        if ((plot == null) || !plot.isAdded(player.getUUID()) && !Permissions.hasPermission(
-                                player,
-                                "plots.web.download.other"
+                        if ((plot == null) || !plot.isAdded(player.getUUID()) && !player.hasPermission("plots.web.download.other"
                         )) {
                             player.sendMessage(
                                     TranslatableCaption.of("permission.no_plot_perms")
@@ -390,10 +398,10 @@ public class Web extends SubCommand {
                         return false;
                     }
                     case "world": {
-                        if (!Permissions.hasPermission(player, "plots.web.upload.world")) {
+                        if (!player.hasPermission("plots.web.upload.world")) {
                             player.sendMessage(
                                     TranslatableCaption.of("permission.no_permission"),
-                                    Template.of("node", "plots.web.upload.world")
+                                    TagResolver.resolver("node", Tag.inserting(Component.text("plots.web.upload.world")))
                             );
                             return false;
                         }

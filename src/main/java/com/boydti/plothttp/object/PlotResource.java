@@ -201,7 +201,7 @@ public class PlotResource extends Resource {
         obj.put("world", plot.getArea().getWorldName());
         obj.put("ownerUUID", plot.getOwner().toString());
         obj.put("ownerName", plot.getOwner() == null ? "" :
-                PlotSquared.get().getImpromptuUUIDPipeline().getImmediately(plot.getOwner()).getUsername());
+                PlotSquared.get().getImpromptuUUIDPipeline().getImmediately(plot.getOwner()).username());
 
         obj.put("flags", getArray(plot.getFlags()));
 

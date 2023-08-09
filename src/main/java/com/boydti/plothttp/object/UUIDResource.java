@@ -24,7 +24,7 @@ public class UUIDResource extends Resource {
             final UUID uuid = getUUID(arg);
             final JSONObject obj = new JSONObject();
             if (uuid != null) {
-                final String name = PlotSquared.get().getImpromptuUUIDPipeline().getImmediately(uuid).getUsername();
+                final String name = PlotSquared.get().getImpromptuUUIDPipeline().getImmediately(uuid).username();
                 if (name != null) {
                     obj.put("uuid", uuid.toString());
                     obj.put("name", name);

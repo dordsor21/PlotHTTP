@@ -3,11 +3,12 @@
 spigot = "1.17.1-R0.1-SNAPSHOT"
 
 # Plugins
-plotsquared = "6.5.0"
+plotsquared = "7.0.0-SNAPSHOT"
 fawe = "2.0.0-SNAPSHOT"
 
 # Third party
 jsonSimple = "1.1"
+bom = "1.35-SNAPSHOT"
 
 # Gradle plugins
 bukkityml = "0.5.0"
@@ -18,12 +19,14 @@ shadow = "7.1.1"
 spigot = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }
 
 # Plugins
-plotsquared = { group = "com.plotsquared", name = "PlotSquared-Bukkit", version.ref = "plotsquared" }
+plotsquared = { group = "com.intellectualsites.plotsquared", name = "plotsquared-bukkit", version.ref = "plotsquared" }
+plotsquaredCore = { group = "com.intellectualsites.plotsquared", name = "plotsquared-core", version.ref = "plotsquared" }
 faweBukkit = { group = "com.fastasyncworldedit", name = "FastAsyncWorldEdit-Bukkit", version.ref = "fawe" }
 faweCore = { group = "com.fastasyncworldedit", name = "FastAsyncWorldEdit-Core", version.ref = "fawe" }
 
 # Third party
 jsonSimple = { group = "com.googlecode.json-simple", name = "json-simple", version.ref = "jsonSimple"}
+bom = { group = "com.intellectualsites.bom", name = "bom-newest", version.ref = "bom"}
 
 [plugins]
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
