@@ -28,7 +28,7 @@ repositories {
 
 dependencies {
     compileOnly(group = "com.intellectualsites.informative-annotations", name = "informative-annotations")
-    compileOnly(libs.spigot)
+    compileOnly(libs.paper)
     compileOnly(libs.bundles.fawe)
     compileOnly(libs.plotsquared) {
         exclude(group = "worldedit-core")
